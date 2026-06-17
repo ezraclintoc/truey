@@ -1,0 +1,139 @@
+#truey-card {
+  margin: 0 0 16px 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.tcard {
+  background: var(--truey-bg, #fff);
+  border: 1px solid var(--truey-border, #e0e0e0);
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07), 0 2px 16px rgba(0,0,0,0.04);
+  overflow: hidden;
+  max-width: 652px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tcard {
+    --truey-bg: #1e1e1e;
+    --truey-border: #3a3a3a;
+    --truey-text: #e8eaed;
+    --truey-muted: #9aa0a6;
+    --truey-accent: #8ab4f8;
+    --truey-accent-bg: #1e3a5f;
+    --truey-tag-bg: #2d2d2d;
+    --truey-tag-text: #9aa0a6;
+  }
+}
+
+/* Header */
+.tcard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px 10px;
+  border-bottom: 1px solid var(--truey-border, #e0e0e0);
+}
+.tcard-header-left  { display: flex; align-items: center; gap: 8px; }
+.tcard-header-right { display: flex; align-items: center; gap: 8px; }
+
+.tcard-dot   { width: 6px; height: 6px; border-radius: 50%; background: #1a73e8; flex-shrink: 0; }
+.tcard-label { font-size: 13px; font-weight: 700; color: #1a73e8; }
+.tcard-topic { font-size: 13px; color: var(--truey-muted, #6b7280); }
+
+.tcard-provider-badge {
+  font-size: 11px;
+  color: var(--truey-muted, #6b7280);
+  background: var(--truey-tag-bg, #f1f3f4);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+
+.tcard-btn-icon {
+  background: none; border: none; cursor: pointer;
+  color: var(--truey-muted, #6b7280);
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 6px;
+}
+.tcard-btn-icon:hover { background: var(--truey-tag-bg, #f1f3f4); }
+
+/* Body */
+.tcard-body { padding: 14px 16px 0; }
+
+/* Skeleton loading */
+.tcard-loading    { padding-bottom: 14px; }
+.tcard-skeleton   { border-radius: 4px; margin-bottom: 10px; height: 13px;
+  background: linear-gradient(90deg, var(--truey-border,#e0e0e0) 25%, var(--truey-tag-bg,#f1f3f4) 50%, var(--truey-border,#e0e0e0) 75%);
+  background-size: 200% 100%;
+  animation: truey-shimmer 1.4s infinite; }
+.line-full { width: 100%; }
+.line-80   { width: 80%; }
+.line-60   { width: 60%; }
+@keyframes truey-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* Summary */
+.tcard-summary { font-size: 14.5px; line-height: 1.65; color: var(--truey-text, #1a1a1a); margin-bottom: 12px; }
+.tcard-summary mark { background: #e8f0fe; color: #1a73e8; border-radius: 3px; padding: 0 3px; }
+@media (prefers-color-scheme: dark) { .tcard-summary mark { background: #1e3a5f; color: #8ab4f8; } }
+.tcard-streaming { opacity: 0.85; }
+
+/* Confidence */
+.tcard-confidence { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.tcard-conf-label { font-size: 11px; color: var(--truey-muted, #6b7280); white-space: nowrap; }
+.tcard-conf-bar-wrap { flex: 1; height: 4px; background: var(--truey-border, #e0e0e0); border-radius: 99px; overflow: hidden; }
+.tcard-conf-bar { height: 100%; border-radius: 99px; }
+.tcard-conf-value { font-size: 11px; font-weight: 600; white-space: nowrap; }
+/* bar fill colours */
+.tcard-conf-bar.conf-high { background: #16a34a; }
+.tcard-conf-bar.conf-mid  { background: #d97706; }
+.tcard-conf-bar.conf-low  { background: #dc2626; }
+/* label text colours */
+.conf-high { color: #16a34a; }
+.conf-mid  { color: #d97706; }
+.conf-low  { color: #dc2626; }
+
+/* Citations */
+.tcard-citations-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--truey-muted, #6b7280); margin-bottom: 6px;
+}
+.tcard-citation {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px 0; border-top: 1px solid var(--truey-border, #e0e0e0);
+  text-decoration: none; cursor: pointer;
+}
+.tcard-citation:hover .tcard-cite-title { text-decoration: underline; }
+.tcard-cite-num {
+  flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--truey-accent-bg, #e8f0fe); color: var(--truey-accent, #1a73e8);
+  font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px;
+}
+.tcard-cite-content { flex: 1; min-width: 0; }
+.tcard-cite-title { font-size: 13px; color: var(--truey-accent, #1a73e8); line-height: 1.4; margin-bottom: 2px; }
+.tcard-cite-meta  { font-size: 11px; color: var(--truey-muted, #6b7280); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tcard-source-badge {
+  font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px;
+  background: var(--truey-tag-bg, #f1f3f4); color: var(--truey-tag-text, #5f6368);
+  text-transform: uppercase; letter-spacing: 0.03em;
+}
+
+/* Footer */
+.tcard-footer { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--truey-border, #e0e0e0); margin-top: 4px; }
+.tcard-footer-note { font-size: 11px; color: var(--truey-muted, #6b7280); }
+.tcard-link { font-size: 12px; color: var(--truey-accent, #1a73e8); background: none; border: none; cursor: pointer; font-weight: 500; }
+
+/* Limited data */
+.tcard-limited-banner { padding: 14px 0 4px; }
+.tcard-limited-title  { font-size: 13px; font-weight: 600; color: #d97706; margin-bottom: 4px; }
+.tcard-limited-desc   { font-size: 12px; color: var(--truey-muted, #6b7280); line-height: 1.5; margin-bottom: 10px; }
+.tcard-limited-actions { display: flex; gap: 8px; padding-bottom: 14px; }
+.tcard-btn-relax { font-size: 12px; font-weight: 500; padding: 5px 14px; border-radius: 99px; border: none; background: #d97706; color: white; cursor: pointer; }
+.tcard-btn-keep  { font-size: 12px; font-weight: 500; padding: 5px 14px; border-radius: 99px; border: 1px solid var(--truey-border,#e0e0e0); background: transparent; color: var(--truey-muted,#6b7280); cursor: pointer; }
+
+/* Empty / no-sources */
+.tcard-empty { padding: 24px 0; text-align: center; }
+.tcard-empty svg { margin: 0 auto 10px; display: block; opacity: 0.3; stroke: var(--truey-muted,#6b7280); }
+.tcard-empty-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.tcard-empty-hint  { font-size: 13px; color: var(--truey-muted,#6b7280); line-height: 1.6; max-width: 380px; margin: 0 auto 16px; }
+
+/* Error */
+.tcard-error { padding: 14px 0; font-size: 13px; color: #dc2626; }

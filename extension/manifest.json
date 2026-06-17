@@ -1,0 +1,92 @@
+{
+  "manifest_version": 3,
+  "name": "Truey",
+  "version": "0.1.0",
+  "description": "Science-backed summaries from peer-reviewed research, inline on your search results.",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "truey@truey.app",
+      "strict_min_version": "109.0"
+    }
+  },
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Truey",
+    "default_icon": {
+      "16":  "icons/icon16.png",
+      "32":  "icons/icon32.png",
+      "48":  "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "icons": {
+    "16":  "icons/icon16.png",
+    "32":  "icons/icon32.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "background": {
+    "service_worker": "background/worker.js",
+    "page": "background/background.html",
+    "type": "module"
+  },
+
+  "options_ui": {
+    "page": "settings/settings.html",
+    "open_in_tab": true
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.google.com/search*",
+        "*://www.bing.com/search*",
+        "*://duckduckgo.com/*",
+        "*://search.brave.com/search*",
+        "*://www.ecosia.org/search*",
+        "*://www.startpage.com/search*",
+        "*://search.yahoo.com/search*"
+      ],
+      "js": ["content/search.js"],
+      "css": ["content/search.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/selection.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "permissions": [
+    "contextMenus",
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "*://eutils.ncbi.nlm.nih.gov/*",
+    "*://api.semanticscholar.org/*",
+    "*://export.arxiv.org/*",
+    "*://europepmc.org/*",
+    "*://api.openalex.org/*",
+    "*://rest.ensembl.org/*",
+    "*://api.x.ai/*",
+    "*://api.openai.com/*",
+    "*://api.anthropic.com/*"
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["content/search.css", "content/popup.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

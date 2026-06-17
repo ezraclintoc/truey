@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Truey — Extension Popup</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:             #ffffff;
+      --bg-secondary:   #f8f9fa;
+      --bg-tertiary:    #f1f3f4;
+      --border:         #e0e0e0;
+      --text:           #1a1a1a;
+      --text-muted:     #6b7280;
+      --accent:         #1a73e8;
+      --accent-bg:      #e8f0fe;
+      --accent-hover:   #1557b0;
+      --tag-bg:         #f1f3f4;
+      --tag-text:       #5f6368;
+      --success:        #16a34a;
+      --success-bg:     #f0fdf4;
+      --danger:         #dc2626;
+      --danger-bg:      #fef2f2;
+      --warning:        #d97706;
+      --shadow:         0 2px 12px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+      --radius:         10px;
+      --radius-sm:      6px;
+      --popup-width:    340px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:           #1e1e1e;
+        --bg-secondary: #252525;
+        --bg-tertiary:  #2d2d2d;
+        --border:       #383838;
+        --text:         #e8eaed;
+        --text-muted:   #9aa0a6;
+        --accent:       #8ab4f8;
+        --accent-bg:    #1e3a5f;
+        --accent-hover: #aecbfa;
+        --tag-bg:       #2d2d2d;
+        --tag-text:     #9aa0a6;
+        --success:      #4ade80;
+        --success-bg:   #052e16;
+        --danger:       #f87171;
+        --danger-bg:    #3b1111;
+        --warning:      #fbbf24;
+        --shadow:       0 2px 12px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.2);
+      }
+    }
+
+    /* ── Page wrapper (demo only) ── */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #667eea;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 40px 16px;
+    }
+
+    .demo-controls {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .demo-pill {
+      font-size: 12px;
+      padding: 5px 14px;
+      border-radius: 99px;
+      border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.15);
+      color: white;
+      cursor: pointer;
+      transition: background 0.15s;
+      backdrop-filter: blur(4px);
+    }
+    .demo-pill:hover  { background: rgba(255,255,255,0.25); }
+    .demo-pill.active { background: rgba(255,255,255,0.9); color: #4c1d95; font-weight: 600; }
+
+    /* ── Popup shell ── */
+    .popup {
+      width: var(--popup-width);
+      background: var(--bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: opacity 0.2s;
+    }
+
+    .popup.is-off { opacity: 0.6; }
+
+    /* ── Header ── */
+    .popup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 14px 11px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .truey-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .truey-dot.off { background: var(--text-muted); }
+
+    .truey-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.1px;
+    }
+
+    .truey-name.off { color: var(--text-muted); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: var(--radius-sm);
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-icon:hover { background: var(--bg-tertiary); color: var(--text); }
+
+    /* Toggle */
+    .toggle { position: relative; width: 36px; height: 20px; cursor: pointer; display: inline-block; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0; border-radius: 99px;
+      background: var(--border); transition: background 0.2s;
+    }
+    .toggle input:checked + .toggle-track { background: var(--accent); }
+    .toggle-thumb {
+      position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px;
+      border-radius: 50%; background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: transform 0.2s; pointer-events: none;
+    }
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
+
+    /* ── Provider status bar ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 14px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      font-size: 11.5px;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%; flex-shrink: 0;
+    }
+    .status-dot.ok  { background: var(--success); }
+    .status-dot.err { background: var(--danger); }
+    .status-dot.warn { background: var(--warning); }
+
+    .status-label { font-weight: 500; color: var(--text); }
+
+    .status-right {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ── Body ── */
+    .popup-body { padding: 12px 0; }
+
+    /* Active page section */
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0 14px;
+      margin-bottom: 8px;
+    }
+
+    .active-card {
+      margin: 0 12px 12px;
+      border: 1px solid var(--accent);
+      background: var(--accent-bg);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .active-card-left { flex: 1; min-width: 0; }
+
+    .active-topic {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .active-meta {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .confidence-pill {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 99px;
+    }
+    .confidence-pill.low-mod { background: #fef3c7; color: #92400e; }
+    .confidence-pill.high    { background: var(--success-bg); color: var(--success); }
+
+    @media (prefers-color-scheme: dark) {
+      .confidence-pill.low-mod { background: #2d1f00; color: #fbbf24; }
+    }
+
+    .btn-view {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--accent);
+      color: white;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+    .btn-view:hover { opacity: 0.85; }
+
+    /* Divider */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 10px; }
+
+    /* Recent queries */
+    .recent-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: background 0.12s;
+      text-decoration: none;
+    }
+    .recent-item:hover { background: var(--bg-secondary); }
+
+    .recent-icon {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      background: var(--bg-tertiary);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+    }
+
+    .recent-content { flex: 1; min-width: 0; }
+
+    .recent-topic {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 1px;
+    }
+
+    .recent-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .recent-dot { width: 2px; height: 2px; border-radius: 50%; background: var(--border); }
+
+    .recent-chevron {
+      color: var(--border);
+      flex-shrink: 0;
+      transition: color 0.12s;
+    }
+    .recent-item:hover .recent-chevron { color: var(--text-muted); }
+
+    /* Empty state */
+    .empty-state {
+      padding: 24px 14px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .empty-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 10px;
+      color: var(--text-muted);
+    }
+
+    .empty-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .empty-hint  { font-size: 12px; line-height: 1.5; }
+
+    /* Disconnected banner */
+    .disconnected-banner {
+      margin: 0 12px 12px;
+      background: var(--danger-bg);
+      border: 1px solid var(--danger);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .disconnected-text { flex: 1; }
+    .disconnected-title { font-size: 12.5px; font-weight: 600; color: var(--danger); margin-bottom: 2px; }
+    .disconnected-hint  { font-size: 11.5px; color: var(--text-muted); line-height: 1.4; }
+
+    .btn-reconnect {
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 99px;
+      border: 1px solid var(--danger);
+      background: none;
+      color: var(--danger);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-reconnect:hover { background: var(--danger-bg); }
+
+    /* Off state overlay message */
+    .off-message {
+      padding: 20px 14px;
+      text-align: center;
+    }
+
+    .off-message-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Footer ── */
+    .popup-footer {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .btn-settings {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      width: 100%;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .btn-settings:hover {
+      background: var(--accent-bg);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Demo controls -->
+  <div class="demo-controls">
+    <button class="demo-pill active" onclick="setState('active', this)">Active summary</button>
+    <button class="demo-pill" onclick="setState('idle', this)">Idle (recent)</button>
+    <button class="demo-pill" onclick="setState('empty', this)">No history</button>
+    <button class="demo-pill" onclick="setState('disconnected', this)">Disconnected</button>
+    <button class="demo-pill" onclick="setState('off', this)">Truey off</button>
+  </div>
+
+  <!-- ════════════ POPUP ════════════ -->
+  <div class="popup" id="popup">
+
+    <!-- Header -->
+    <div class="popup-header">
+      <div class="header-left">
+        <div class="truey-dot" id="header-dot"></div>
+        <span class="truey-name" id="header-name">Truey</span>
+      </div>
+      <div class="header-right">
+        <button class="btn-icon" title="Settings">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+        </button>
+        <label class="toggle" title="Enable / disable Truey">
+          <input type="checkbox" id="global-toggle" checked onchange="onToggle(this)" />
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar" id="status-bar">
+      <div class="status-left">
+        <div class="status-dot ok" id="status-dot"></div>
+        <span id="status-text"><span class="status-label">Ollama</span> · llama3.2</span>
+      </div>
+      <div class="status-right" id="status-right">Connected</div>
+    </div>
+
+    <!-- Body -->
+    <div class="popup-body" id="popup-body">
+
+      <!-- ── ACTIVE STATE ── -->
+      <div id="state-active" style="display:none">
+        <div class="section-label">On this page</div>
+        <div class="active-card">
+          <div class="active-card-left">
+            <div class="active-topic">Creatine &amp; Hair Loss</div>
+            <div class="active-meta">
+              <span class="confidence-pill low-mod">Low–Moderate</span>
+              <span>4 studies</span>
+              <span class="recent-dot"></span>
+              <span>PubMed · Semantic Scholar</span>
+            </div>
+          </div>
+          <button class="btn-view">View</button>
+        </div>
+
+        <hr class="divider" />
+        <div class="section-label">Recent</div>
+
+        <a class="recent-item" href="#" onclick="return false">
+          <div class="recent-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <div class="recent-content">
+            <div class="recent-topic">Omega-3 &amp; Depression</div>
+            <div class="recent-meta">High confidence <span class="recent-dot"></span> 8 studies <span class="recent-dot"></span> 2h ago</div>
+          </div>
+          <svg class="recent-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+
+        <a class="recent-item" href="#" onclick="return false">
+          <div class="recent-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <div class="recent-content">
+            <div class="recent-topic">Sleep deprivation &amp; cortisol</div>
+            <div class="recent-meta">Moderate confidence <span class="recent-dot"></span> 5 studies <span class="recent-dot"></span> Yesterday</div>
+          </div>
+          <svg class="recent-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+
+      <!-- ── IDLE STATE (no active summary) ── -->
+      <div id="state-idle" style="display:none">
+        <div class="section-label">Recent</div>
+
+        <a class="recent-item" href="#" onclick="return false">
+          <div class="recent-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <div class="recent-content">
+            <div class="recent-topic">Creatine &amp; Hair Loss</div>
+            <div class="recent-meta">Low–Moderate <span class="recent-dot"></span> 4 studies <span class="recent-dot"></span> 1h ago</div>
+          </div>
+          <svg class="recent-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+
+        <a class="recent-item" href="#" onclick="return false">
+          <div class="recent-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <div class="recent-content">
+            <div class="recent-topic">Omega-3 &amp; Depression</div>
+            <div class="recent-meta">High confidence <span class="recent-dot"></span> 8 studies <span class="recent-dot"></span> 2h ago</div>
+          </div>
+          <svg class="recent-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+
+        <a class="recent-item" href="#" onclick="return false">
+          <div class="recent-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <div class="recent-content">
+            <div class="recent-topic">Sleep deprivation &amp; cortisol</div>
+            <div class="recent-meta">Moderate confidence <span class="recent-dot"></span> 5 studies <span class="recent-dot"></span> Yesterday</div>
+          </div>
+          <svg class="recent-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+
+        <a class="recent-item" href="#" onclick="return false">
+          <div class="recent-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <div class="recent-content">
+            <div class="recent-topic">Vitamin D &amp; immune function</div>
+            <div class="recent-meta">High confidence <span class="recent-dot"></span> 12 studies <span class="recent-dot"></span> Yesterday</div>
+          </div>
+          <svg class="recent-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+
+      <!-- ── EMPTY STATE ── -->
+      <div id="state-empty" style="display:none">
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <div class="empty-title">No searches yet</div>
+          <div class="empty-hint">Search something science-related and Truey will automatically surface studies from the results page.</div>
+        </div>
+      </div>
+
+      <!-- ── DISCONNECTED STATE ── -->
+      <div id="state-disconnected" style="display:none">
+        <div style="padding-top: 4px;">
+          <div class="disconnected-banner">
+            <div class="disconnected-text">
+              <div class="disconnected-title">Provider unreachable</div>
+              <div class="disconnected-hint">Ollama isn't responding at http://localhost:11434. Make sure it's running and a model is loaded.</div>
+              <button class="btn-reconnect">Retry connection</button>
+            </div>
+          </div>
+
+          <div class="section-label" style="margin-top:4px">Recent</div>
+
+          <a class="recent-item" href="#" onclick="return false" style="opacity:0.5;pointer-events:none">
+            <div class="recent-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </div>
+            <div class="recent-content">
+              <div class="recent-topic">Creatine &amp; Hair Loss</div>
+              <div class="recent-meta">Low–Moderate <span class="recent-dot"></span> 4 studies <span class="recent-dot"></span> 1h ago</div>
+            </div>
+            <svg class="recent-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+
+          <a class="recent-item" href="#" onclick="return false" style="opacity:0.5;pointer-events:none">
+            <div class="recent-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </div>
+            <div class="recent-content">
+              <div class="recent-topic">Omega-3 &amp; Depression</div>
+              <div class="recent-meta">High confidence <span class="recent-dot"></span> 8 studies <span class="recent-dot"></span> 2h ago</div>
+            </div>
+            <svg class="recent-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── OFF STATE ── -->
+      <div id="state-off" style="display:none">
+        <div class="off-message">
+          <div class="off-message-text">Truey is turned off.<br/>Toggle it on to start verifying searches and selected text.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="popup-footer">
+      <button class="btn-settings">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+        Open settings
+      </button>
+    </div>
+
+  </div>
+
+<script>
+  const states = ['active','idle','empty','disconnected','off'];
+
+  const statusConfigs = {
+    active:       { dot: 'ok',   text: '<span class="status-label">Ollama</span> · llama3.2', right: 'Connected' },
+    idle:         { dot: 'ok',   text: '<span class="status-label">Ollama</span> · llama3.2', right: 'Connected' },
+    empty:        { dot: 'ok',   text: '<span class="status-label">Ollama</span> · llama3.2', right: 'Connected' },
+    disconnected: { dot: 'err',  text: '<span class="status-label">Ollama</span> · llama3.2', right: 'Unreachable' },
+    off:          { dot: 'warn', text: 'Truey is disabled', right: '' },
+  };
+
+  function setState(state, btn) {
+    // Update demo pills
+    document.querySelectorAll('.demo-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Show/hide body sections
+    states.forEach(s => {
+      document.getElementById('state-' + s).style.display = s === state ? '' : 'none';
+    });
+
+    // Status bar
+    const cfg = statusConfigs[state];
+    document.getElementById('status-dot').className   = 'status-dot ' + cfg.dot;
+    document.getElementById('status-text').innerHTML  = cfg.text;
+    document.getElementById('status-right').textContent = cfg.right;
+
+    // Header
+    const isOff = state === 'off';
+    document.getElementById('header-dot').className  = 'truey-dot' + (isOff ? ' off' : '');
+    document.getElementById('header-name').className = 'truey-name' + (isOff ? ' off' : '');
+    document.getElementById('global-toggle').checked = !isOff;
+    document.getElementById('popup').className = 'popup' + (isOff ? ' is-off' : '');
+  }
+
+  function onToggle(el) {
+    if (!el.checked) {
+      document.querySelectorAll('.demo-pill').forEach(b => {
+        if (b.textContent.trim() === 'Truey off') setState('off', b);
+      });
+    } else {
+      document.querySelectorAll('.demo-pill').forEach(b => {
+        if (b.textContent.trim() === 'Idle (recent)') setState('idle', b);
+      });
+    }
+  }
+
+
+  // Start in active state
+  setState('active', document.querySelector('.demo-pill.active'));
+</script>
+</body>
+</html>

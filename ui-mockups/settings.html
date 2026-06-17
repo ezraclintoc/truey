@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Truey — Settings</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #ffffff;
+      --bg-secondary: #f8f9fa;
+      --bg-tertiary:  #f1f3f4;
+      --border:       #e0e0e0;
+      --text:         #1a1a1a;
+      --text-muted:   #6b7280;
+      --accent:       #1a73e8;
+      --accent-bg:    #e8f0fe;
+      --accent-hover: #1557b0;
+      --tag-bg:       #f1f3f4;
+      --tag-text:     #5f6368;
+      --danger:       #dc2626;
+      --danger-bg:    #fef2f2;
+      --success:      #16a34a;
+      --success-bg:   #f0fdf4;
+      --shadow:       0 1px 4px rgba(0,0,0,0.06);
+      --radius:       10px;
+      --radius-sm:    6px;
+      --sidebar-w:    220px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:           #1e1e1e;
+        --bg-secondary: #252525;
+        --bg-tertiary:  #2d2d2d;
+        --border:       #383838;
+        --text:         #e8eaed;
+        --text-muted:   #9aa0a6;
+        --accent:       #8ab4f8;
+        --accent-bg:    #1e3a5f;
+        --accent-hover: #aecbfa;
+        --tag-bg:       #2d2d2d;
+        --tag-text:     #9aa0a6;
+        --danger:       #f87171;
+        --danger-bg:    #3b1111;
+        --success:      #4ade80;
+        --success-bg:   #052e16;
+        --shadow:       0 1px 4px rgba(0,0,0,0.3);
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+    }
+
+    .shell {
+      display: flex;
+      min-height: 100vh;
+      max-width: 940px;
+      margin: 0 auto;
+      background: var(--bg);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+
+    /* ── Sidebar ── */
+    .nav {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      padding: 20px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    .nav-brand-name { font-size: 15px; font-weight: 700; color: var(--accent); }
+    .nav-brand-sub { font-size: 11px; color: var(--text-muted); }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      transition: background 0.12s, color 0.12s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item:hover { background: var(--bg-tertiary); color: var(--text); }
+    .nav-item.active { background: var(--accent-bg); color: var(--accent); font-weight: 500; }
+    .nav-item svg { flex-shrink: 0; opacity: 0.7; }
+    .nav-item.active svg { opacity: 1; }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 12px 10px 4px;
+    }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 28px 32px;
+      overflow-y: auto;
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .section-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+    .section-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
+
+    /* ── Setting groups ── */
+    .setting-group { margin-bottom: 28px; }
+
+    .group-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .setting-row:last-child { border-bottom: none; }
+    .setting-info { flex: 1; min-width: 0; }
+    .setting-name { font-size: 13.5px; font-weight: 500; margin-bottom: 2px; }
+    .setting-hint { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+    .setting-control { flex-shrink: 0; }
+
+    /* ── Toggle ── */
+    .toggle { position: relative; width: 38px; height: 22px; cursor: pointer; display: inline-block; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track { position: absolute; inset: 0; border-radius: 99px; background: var(--border); transition: background 0.2s; }
+    .toggle input:checked + .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.2s; pointer-events: none; }
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
+
+    /* ── Select ── */
+    select {
+      appearance: none;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 13px;
+      padding: 6px 28px 6px 10px;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      min-width: 160px;
+    }
+
+    /* ── Input ── */
+    input[type="text"], input[type="password"], input[type="url"], input[type="number"] {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 13px;
+      padding: 6px 10px;
+      transition: border-color 0.15s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus,
+    input[type="url"]:focus, input[type="number"]:focus {
+      outline: none; border-color: var(--accent);
+    }
+    input[type="number"] { min-width: 72px; }
+
+    /* ── Range slider ── */
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 4px;
+      border-radius: 99px;
+      background: var(--border);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    /* ── Pill checkboxes ── */
+    .pill-group { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+    .pill-check { position: relative; }
+    .pill-check input { position: absolute; opacity: 0; }
+    .pill-check label {
+      display: block;
+      font-size: 12px;
+      padding: 5px 13px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.12s;
+      user-select: none;
+    }
+    .pill-check input:checked + label {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ── Provider cards ── */
+    .provider-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 14px 0 8px;
+    }
+
+    .provider-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .provider-card {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .provider-card input[type="radio"] { position: absolute; opacity: 0; }
+    .provider-card:has(input:checked) { border-color: var(--accent); background: var(--accent-bg); }
+    .provider-card label { cursor: pointer; display: block; }
+    .provider-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .provider-type { font-size: 11px; color: var(--text-muted); }
+    .provider-local { color: var(--success) !important; }
+
+    .provider-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── Help button + modal ── */
+    .help-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-tertiary);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.12s, border-color 0.12s;
+      line-height: 1;
+    }
+    .help-btn:hover { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 520px;
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title { font-size: 15px; font-weight: 600; }
+
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); font-size: 18px; line-height: 1;
+      padding: 2px 6px; border-radius: 4px;
+    }
+    .modal-close:hover { background: var(--bg-tertiary); }
+
+    .modal-body { padding: 20px; }
+
+    .install-tab-row {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+
+    .install-tab {
+      font-size: 13px;
+      padding: 7px 14px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.12s;
+    }
+    .install-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+
+    .install-content { display: none; }
+    .install-content.active { display: block; }
+
+    .install-step {
+      margin-bottom: 14px;
+    }
+
+    .install-step-num {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 20px;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .install-step-label {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+    }
+
+    code {
+      display: block;
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      font-size: 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      color: var(--text);
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    .install-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--bg-secondary);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Vocabulary EQ ── */
+    .style-mode-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-tertiary);
+      padding: 3px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      width: fit-content;
+    }
+
+    .style-mode-btn {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      background: none;
+      color: var(--text-muted);
+      transition: background 0.15s, color 0.15s;
+    }
+    .style-mode-btn.active { background: var(--bg); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    .vocab-simple { }
+    .vocab-advanced { display: none; }
+
+    .scienceness-wrap {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .scienceness-track { margin: 12px 0 8px; }
+
+    .scienceness-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .scienceness-preview {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      line-height: 1.5;
+      margin-top: 10px;
+      font-style: italic;
+    }
+
+    .scienceness-preview strong {
+      display: block;
+      font-style: normal;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    /* EQ panel */
+    .eq-wrap {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+
+    .eq-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .eq-bands {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .eq-band {
+      display: grid;
+      grid-template-columns: 130px 1fr 60px;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .eq-band-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .eq-band-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .eq-slider {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .eq-value {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .eq-axis {
+      display: grid;
+      grid-template-columns: 130px 1fr 60px;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .eq-axis-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .eq-reset {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+    .eq-reset:hover { text-decoration: underline; }
+
+    /* ── Field presets ── */
+    .field-presets { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+    .field-chip {
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .field-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .field-chip.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+
+    /* ── Limited option selector ── */
+    .limited-option {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 11px 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      display: block;
+    }
+    .limited-option:hover { border-color: var(--accent); }
+    .limited-option.active { border-color: var(--accent); background: var(--accent-bg); }
+
+    .limited-option-inner { display: flex; gap: 10px; align-items: flex-start; }
+
+    .limited-option-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      margin-top: 2px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .limited-option.active .limited-option-dot {
+      border-color: var(--accent);
+      background: var(--accent);
+      box-shadow: inset 0 0 0 2px var(--bg);
+    }
+
+    /* ── Context menu mockup ── */
+    .context-menu-demo {
+      display: inline-flex;
+      flex-direction: column;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      overflow: hidden;
+      min-width: 210px;
+      margin-top: 10px;
+    }
+
+    .ctx-item {
+      font-size: 13px;
+      padding: 8px 14px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      user-select: none;
+    }
+    .ctx-item:last-child { border-bottom: none; }
+
+    .ctx-item.truey {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      font-weight: 500;
+      background: var(--accent-bg);
+    }
+
+    .ctx-truey-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+    /* ── Inline info box ── */
+    .info-box {
+      background: var(--accent-bg);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 16px;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--bg-tertiary); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); }
+    .btn-donate {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 18px;
+      cursor: pointer;
+      color: var(--text);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-donate:hover { background: #fff0f3; border-color: #f87171; color: #dc2626; }
+
+    /* ── Status ── */
+    .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+    .status-dot.ok { background: var(--success); }
+    .status-dot.err { background: var(--danger); }
+    .status-dot.unknown { background: var(--text-muted); }
+    .status-text { font-size: 12px; color: var(--text-muted); }
+
+    /* ── Connection row ── */
+    .input-row { display: flex; gap: 8px; align-items: center; }
+
+    /* ── Privacy manifesto ── */
+    .manifesto {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .manifesto-header {
+      background: var(--success-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .manifesto-headline {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--success);
+    }
+
+    .manifesto-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .manifesto-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .manifesto-check {
+      color: var(--success);
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Donation card ── */
+    .donation-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .donation-text .donation-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .donation-text .donation-sub { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── Save bar ── */
+    .save-bar {
+      position: sticky;
+      bottom: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 12px 32px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin: 32px -32px -28px;
+    }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  </style>
+</head>
+<body>
+
+<!-- ── Local install modal ── -->
+<div class="modal-overlay" id="local-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Setting up a local AI provider</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="install-tab-row">
+        <button class="install-tab active" onclick="switchInstallTab('ollama', this)">Ollama</button>
+        <button class="install-tab" onclick="switchInstallTab('llamacpp', this)">llama.cpp</button>
+      </div>
+
+      <!-- Ollama -->
+      <div class="install-content active" id="install-ollama">
+        <div class="install-step">
+          <div class="install-step-label"><span class="install-step-num">1</span>Install Ollama</div>
+          <div style="display:flex; flex-direction:column; gap:6px">
+            <code>curl -fsSL https://ollama.com/install.sh | sh</code>
+            <div style="font-size:11px;color:var(--text-muted)">Or download the installer from <strong>ollama.com</strong> for macOS / Windows.</div>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="install-step-label"><span class="install-step-num">2</span>Pull a model</div>
+          <code>ollama pull llama3.2</code>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Other good options: <code style="display:inline;padding:1px 5px;font-size:11px">mistral</code> <code style="display:inline;padding:1px 5px;font-size:11px">gemma2:9b</code> <code style="display:inline;padding:1px 5px;font-size:11px">phi3</code></div>
+        </div>
+        <div class="install-step">
+          <div class="install-step-label"><span class="install-step-num">3</span>Start the server</div>
+          <code>ollama serve</code>
+        </div>
+        <div class="install-step">
+          <div class="install-step-label"><span class="install-step-num">4</span>Set in Truey</div>
+          <div style="font-size:13px;color:var(--text-muted)">Use endpoint <strong>http://localhost:11434</strong> — no API key needed.</div>
+        </div>
+        <div class="install-note">
+          Ollama runs entirely on your device. Queries never leave your machine when using a local model.
+        </div>
+      </div>
+
+      <!-- llama.cpp -->
+      <div class="install-content" id="install-llamacpp">
+        <div class="install-step">
+          <div class="install-step-label"><span class="install-step-num">1</span>Build or download llama.cpp</div>
+          <code>git clone https://github.com/ggml-org/llama.cpp && cd llama.cpp && make</code>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Pre-built binaries are available in the GitHub releases for macOS, Linux, and Windows.</div>
+        </div>
+        <div class="install-step">
+          <div class="install-step-label"><span class="install-step-num">2</span>Download a GGUF model</div>
+          <div style="font-size:13px;color:var(--text-muted)">Get a <strong>.gguf</strong> file from Hugging Face (e.g. Llama-3.2-3B-Instruct-Q4_K_M.gguf).</div>
+        </div>
+        <div class="install-step">
+          <div class="install-step-label"><span class="install-step-num">3</span>Start the server</div>
+          <code>./llama-server -m ./your-model.gguf --port 8080</code>
+        </div>
+        <div class="install-step">
+          <div class="install-step-label"><span class="install-step-num">4</span>Set in Truey</div>
+          <div style="font-size:13px;color:var(--text-muted)">Use endpoint <strong>http://localhost:8080</strong> — no API key needed.</div>
+        </div>
+        <div class="install-note">
+          llama.cpp gives you lower-level control and is great for GPU acceleration with CUDA or Metal.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+
+  <!-- ── Sidebar ── -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-dot"></div>
+      <div>
+        <div class="nav-brand-name">Truey</div>
+        <div class="nav-brand-sub">Settings</div>
+      </div>
+    </div>
+
+    <div class="nav-section-label">AI</div>
+    <button class="nav-item active" onclick="show('provider')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Provider
+    </button>
+    <button class="nav-item" onclick="show('output')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Output Style
+    </button>
+
+    <div class="nav-section-label">Sources</div>
+    <button class="nav-item" onclick="show('sources')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 22v-15A2.5 2.5 0 016.5 2z" stroke-width="1.8"/></svg>
+      Databases
+    </button>
+    <button class="nav-item" onclick="show('filters')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Paper Filters
+    </button>
+
+    <div class="nav-section-label">Behavior</div>
+    <button class="nav-item" onclick="show('triggers')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Triggers
+    </button>
+    <button class="nav-item" onclick="show('privacy')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Privacy
+    </button>
+  </nav>
+
+  <!-- ── Main ── -->
+  <div class="main">
+
+    <!-- ════════════ PROVIDER ════════════ -->
+    <div class="section active" id="sec-provider">
+      <div class="section-title">AI Provider</div>
+      <div class="section-desc">Choose where Truey sends your queries. Local providers keep everything on your device — no API key, no data sent anywhere.</div>
+
+      <div class="setting-group">
+        <div class="provider-section-label" style="margin-top:0; display:flex; align-items:center; gap:8px;">
+          Local
+          <button class="help-btn" onclick="openModal()" title="How to set up a local provider">?</button>
+        </div>
+        <div class="provider-grid">
+          <div class="provider-card">
+            <input type="radio" name="provider" id="p-ollama" checked />
+            <label for="p-ollama">
+              <div class="provider-name">Ollama</div>
+              <div class="provider-type provider-local">● On-device</div>
+            </label>
+          </div>
+          <div class="provider-card">
+            <input type="radio" name="provider" id="p-llamacpp" />
+            <label for="p-llamacpp">
+              <div class="provider-name">llama.cpp</div>
+              <div class="provider-type provider-local">● On-device</div>
+            </label>
+          </div>
+          <div class="provider-card">
+            <input type="radio" name="provider" id="p-custom" />
+            <label for="p-custom">
+              <div class="provider-name">Custom endpoint</div>
+              <div class="provider-type">OpenAI-compatible URL</div>
+            </label>
+          </div>
+        </div>
+
+        <div class="provider-section-label" style="display:flex; align-items:center; gap:8px;">
+          Cloud
+        </div>
+        <div class="provider-grid">
+          <div class="provider-card">
+            <input type="radio" name="provider" id="p-grok" />
+            <label for="p-grok">
+              <div class="provider-name">Grok (xAI)</div>
+              <div class="provider-type">API key required</div>
+            </label>
+          </div>
+          <div class="provider-card">
+            <input type="radio" name="provider" id="p-openai" />
+            <label for="p-openai">
+              <div class="provider-name">OpenAI</div>
+              <div class="provider-type">API key required</div>
+            </label>
+          </div>
+          <div class="provider-card">
+            <input type="radio" name="provider" id="p-claude" />
+            <label for="p-claude">
+              <div class="provider-name">Claude (Anthropic)</div>
+              <div class="provider-type">API key required</div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="group-label">Connection</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Endpoint URL</div>
+            <div class="setting-hint">Base URL — Ollama default is http://localhost:11434</div>
+          </div>
+          <div class="setting-control">
+            <input type="url" value="http://localhost:11434" style="min-width:210px" />
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">API Key</div>
+            <div class="setting-hint">Leave blank for local providers</div>
+          </div>
+          <div class="setting-control input-row">
+            <input type="password" placeholder="sk-…" style="min-width:170px" />
+            <button class="btn btn-secondary" style="font-size:12px;padding:6px 10px">Test</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Model</div>
+            <div class="setting-hint">Local models are auto-detected from your running server</div>
+          </div>
+          <div class="setting-control">
+            <select>
+              <option>llama3.2</option>
+              <option>llama3.1:8b</option>
+              <option>mistral</option>
+              <option>gemma2:9b</option>
+              <option>phi3</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row" style="border:none;padding-top:8px">
+          <div></div>
+          <div class="status-text"><span class="status-dot ok"></span>Connected · 142 ms</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════ OUTPUT STYLE ════════════ -->
+    <div class="section" id="sec-output">
+      <div class="section-title">Output Style</div>
+      <div class="section-desc">Control how Truey writes summaries — vocabulary level, field focus, and formatting.</div>
+
+      <div class="setting-group">
+        <div class="group-label">Vocabulary</div>
+
+        <div class="style-mode-toggle">
+          <button class="style-mode-btn active" id="btn-simple" onclick="setVocabMode('simple')">Simple</button>
+          <button class="style-mode-btn" id="btn-advanced" onclick="setVocabMode('advanced')">Advanced EQ</button>
+        </div>
+
+        <!-- Simple mode -->
+        <div class="vocab-simple" id="vocab-simple">
+          <div class="scienceness-wrap">
+            <div style="font-size:13px; font-weight:500; margin-bottom:4px">Overall scienceness level</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px">Adjusts how technical the summary language is across the board</div>
+            <div class="scienceness-track">
+              <input type="range" id="scienceness" min="1" max="4" value="2" style="width:100%" oninput="updateScienceness(this.value)" />
+            </div>
+            <div class="scienceness-labels">
+              <span>Plain English</span>
+              <span>Undergrad</span>
+              <span>Graduate</span>
+              <span>Expert</span>
+            </div>
+            <div class="scienceness-preview" id="scienceness-preview">
+              <strong>Preview — Undergrad</strong>
+              Creatine may slightly elevate DHT levels based on limited evidence, but a direct link to hair loss hasn't been confirmed in clinical studies.
+            </div>
+          </div>
+        </div>
+
+        <!-- Advanced EQ mode -->
+        <div class="vocab-advanced" id="vocab-advanced">
+          <div class="eq-wrap">
+            <div class="eq-desc">Fine-tune the vocabulary level per domain independently — like a mixing board for scientific language. Drag each band to the complexity you're comfortable with for that field.</div>
+
+            <div class="eq-axis">
+              <div></div>
+              <div class="eq-axis-labels"><span>Plain</span><span>Undergrad</span><span>Expert</span></div>
+              <div></div>
+            </div>
+
+            <div class="eq-bands">
+              <div class="eq-band">
+                <div><div class="eq-band-name">Medicine / Clinical</div><div class="eq-band-sub">diagnoses, treatments, drugs</div></div>
+                <input type="range" class="eq-slider" min="1" max="4" value="3" oninput="updateEQ(this)" />
+                <div class="eq-value" id="eq-val-0">Graduate</div>
+              </div>
+              <div class="eq-band">
+                <div><div class="eq-band-name">Statistics</div><div class="eq-band-sub">p-values, confidence intervals</div></div>
+                <input type="range" class="eq-slider" min="1" max="4" value="2" oninput="updateEQ(this)" />
+                <div class="eq-value" id="eq-val-1">Undergrad</div>
+              </div>
+              <div class="eq-band">
+                <div><div class="eq-band-name">Nutrition / Diet</div><div class="eq-band-sub">macros, micronutrients, metabolism</div></div>
+                <input type="range" class="eq-slider" min="1" max="4" value="2" oninput="updateEQ(this)" />
+                <div class="eq-value" id="eq-val-2">Undergrad</div>
+              </div>
+              <div class="eq-band">
+                <div><div class="eq-band-name">Psychology</div><div class="eq-band-sub">behavior, cognition, mental health</div></div>
+                <input type="range" class="eq-slider" min="1" max="4" value="1" oninput="updateEQ(this)" />
+                <div class="eq-value" id="eq-val-3">Plain</div>
+              </div>
+              <div class="eq-band">
+                <div><div class="eq-band-name">Biology / Genetics</div><div class="eq-band-sub">cells, genes, molecular</div></div>
+                <input type="range" class="eq-slider" min="1" max="4" value="2" oninput="updateEQ(this)" />
+                <div class="eq-value" id="eq-val-4">Undergrad</div>
+              </div>
+              <div class="eq-band">
+                <div><div class="eq-band-name">Physics / Chemistry</div><div class="eq-band-sub">reactions, forces, compounds</div></div>
+                <input type="range" class="eq-slider" min="1" max="4" value="1" oninput="updateEQ(this)" />
+                <div class="eq-value" id="eq-val-5">Plain</div>
+              </div>
+              <div class="eq-band">
+                <div><div class="eq-band-name">Climate / Environment</div><div class="eq-band-sub">emissions, ecosystems, models</div></div>
+                <input type="range" class="eq-slider" min="1" max="4" value="2" oninput="updateEQ(this)" />
+                <div class="eq-value" id="eq-val-6">Undergrad</div>
+              </div>
+            </div>
+            <button class="eq-reset" onclick="resetEQ()">Reset all to Undergrad</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="group-label">Field Preset</div>
+        <div style="font-size:12px; color:var(--text-muted)">Boost domain-specific terminology for a particular field. Works in both Simple and Advanced modes.</div>
+        <div class="field-presets">
+          <button class="field-chip" onclick="this.classList.toggle('active')">None</button>
+          <button class="field-chip active" onclick="this.classList.toggle('active')">Medicine</button>
+          <button class="field-chip" onclick="this.classList.toggle('active')">Nutrition</button>
+          <button class="field-chip" onclick="this.classList.toggle('active')">Psychology</button>
+          <button class="field-chip" onclick="this.classList.toggle('active')">Physics</button>
+          <button class="field-chip" onclick="this.classList.toggle('active')">Biology</button>
+          <button class="field-chip" onclick="this.classList.toggle('active')">Chemistry</button>
+          <button class="field-chip" onclick="this.classList.toggle('active')">Climate</button>
+          <button class="field-chip" onclick="this.classList.toggle('active')">Computer Science</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="group-label">Formatting</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Length</div>
+            <div class="setting-hint">How much detail to include</div>
+          </div>
+          <div class="setting-control">
+            <select>
+              <option>Brief (2–3 sentences)</option>
+              <option selected>Standard (1 paragraph)</option>
+              <option>Detailed (2–3 paragraphs)</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Highlight key phrases</div>
+            <div class="setting-hint">Mark key conclusions and caveats in the summary text</div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Show evidence confidence bar</div>
+            <div class="setting-hint">Displays Low / Moderate / High rating based on study quality</div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Max citations shown</div>
+            <div class="setting-hint">Number of sources visible before "View all" is needed</div>
+          </div>
+          <div class="setting-control">
+            <input type="number" value="3" min="1" max="10" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════ DATABASES ════════════ -->
+    <div class="section" id="sec-sources">
+      <div class="section-title">Paper Databases</div>
+      <div class="section-desc">Choose which sources Truey queries. More sources = broader coverage, slightly slower results.</div>
+
+      <div class="setting-group">
+        <div class="group-label">Active Databases</div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">PubMed</div><div class="setting-hint">NCBI biomedical literature — gold standard for medicine &amp; biology</div></div>
+          <div class="setting-control"><label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">Semantic Scholar</div><div class="setting-hint">AI-indexed research across all fields — strong for CS and cross-discipline</div></div>
+          <div class="setting-control"><label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">arXiv</div><div class="setting-hint">Preprints for physics, math, CS, biology — cutting edge but not peer-reviewed</div></div>
+          <div class="setting-control"><label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">Cochrane Library</div><div class="setting-hint">Systematic reviews and meta-analyses — highest evidence quality for medicine</div></div>
+          <div class="setting-control"><label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">Europe PMC</div><div class="setting-hint">European biomedical literature, overlaps PubMed but adds additional coverage</div></div>
+          <div class="setting-control"><label class="toggle"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">OpenAlex</div><div class="setting-hint">Open scholarly graph — very broad coverage across all academic disciplines</div></div>
+          <div class="setting-control"><label class="toggle"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">bioRxiv / medRxiv</div><div class="setting-hint">Biology &amp; medical preprints — recent but unreviewed. Shown with a warning badge.</div></div>
+          <div class="setting-control"><label class="toggle"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════ PAPER FILTERS ════════════ -->
+    <div class="section" id="sec-filters">
+      <div class="section-title">Paper Filters</div>
+      <div class="section-desc">Filter out low-quality or irrelevant studies before they reach the AI.</div>
+
+      <div class="setting-group">
+        <div class="group-label">Quality Thresholds</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Minimum citation count</div>
+            <div class="setting-hint">Ignore papers cited fewer than this many times (0 = no filter)</div>
+          </div>
+          <div class="setting-control"><input type="number" value="5" min="0" /></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Publication date range</div>
+            <div class="setting-hint">Only include papers published within the last N years</div>
+          </div>
+          <div class="setting-control">
+            <select>
+              <option>All time</option>
+              <option>Last 5 years</option>
+              <option selected>Last 10 years</option>
+              <option>Last 20 years</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Max papers fetched</div>
+            <div class="setting-hint">Total papers retrieved across all databases per query</div>
+          </div>
+          <div class="setting-control"><input type="number" value="12" min="3" max="30" /></div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="group-label">When results are limited</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Controls what Truey does when fewer than the threshold number of papers are found after applying your filters.</div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;" id="limited-options">
+          <label class="limited-option" onclick="selectLimitedOption(this)">
+            <input type="radio" name="limited-behavior" value="summarize" style="display:none" />
+            <div class="limited-option-inner">
+              <div class="limited-option-dot"></div>
+              <div>
+                <div style="font-size:13px;font-weight:500;">Summarize with what's available</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Generate the summary using however many studies were found, with a low-confidence warning shown.</div>
+              </div>
+            </div>
+          </label>
+          <label class="limited-option active" onclick="selectLimitedOption(this)">
+            <input type="radio" name="limited-behavior" value="ask" checked style="display:none" />
+            <div class="limited-option-inner">
+              <div class="limited-option-dot"></div>
+              <div>
+                <div style="font-size:13px;font-weight:500;">Ask me first</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Pause and ask whether to expand the search or proceed with limited results. Recommended.</div>
+              </div>
+            </div>
+          </label>
+          <label class="limited-option" onclick="selectLimitedOption(this)">
+            <input type="radio" name="limited-behavior" value="expand" style="display:none" />
+            <div class="limited-option-inner">
+              <div class="limited-option-dot"></div>
+              <div>
+                <div style="font-size:13px;font-weight:500;">Always expand search automatically</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Silently relax filters and retry until enough papers are found, without prompting.</div>
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div class="setting-row" style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+          <div class="setting-info">
+            <div class="setting-name">Limited results threshold</div>
+            <div class="setting-hint">Trigger the above behaviour when fewer than this many papers pass filters</div>
+          </div>
+          <div class="setting-control input-row">
+            <input type="number" value="3" min="1" max="10" style="min-width:60px" />
+            <span style="font-size:12px;color:var(--text-muted)">papers</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="group-label">Preferred Study Types</div>
+        <div style="font-size:12px; color:var(--text-muted)">Weight these study types higher when ranking results</div>
+        <div class="pill-group">
+          <div class="pill-check"><input type="checkbox" id="st-meta" checked /><label for="st-meta">Meta-analyses</label></div>
+          <div class="pill-check"><input type="checkbox" id="st-sys" checked /><label for="st-sys">Systematic reviews</label></div>
+          <div class="pill-check"><input type="checkbox" id="st-rct" checked /><label for="st-rct">RCTs</label></div>
+          <div class="pill-check"><input type="checkbox" id="st-obs" /><label for="st-obs">Observational</label></div>
+          <div class="pill-check"><input type="checkbox" id="st-case" /><label for="st-case">Case studies</label></div>
+          <div class="pill-check"><input type="checkbox" id="st-pre" /><label for="st-pre">Preprints</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════ TRIGGERS ════════════ -->
+    <div class="section" id="sec-triggers">
+      <div class="section-title">Triggers</div>
+      <div class="section-desc">Control when and how Truey activates.</div>
+
+      <div class="setting-group">
+        <div class="group-label">Activation</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Auto-detect on search</div>
+            <div class="setting-hint">Analyse your search query and show a summary if it looks science-relevant</div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Right-click context menu</div>
+            <div class="setting-hint">Adds "Verify with Truey" to the browser's right-click menu when text is selected</div>
+            <div class="context-menu-demo" style="margin-top:10px; pointer-events:none">
+              <div class="ctx-item">Copy</div>
+              <div class="ctx-item">Search Google for "…"</div>
+              <div class="ctx-item truey">
+                <div class="ctx-truey-dot"></div>
+                Verify with Truey
+              </div>
+              <div class="ctx-item">Inspect</div>
+            </div>
+          </div>
+          <div class="setting-control" style="padding-top:2px">
+            <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Detection sensitivity</div>
+            <div class="setting-hint">How aggressively to classify searches as science-relevant</div>
+          </div>
+          <div class="setting-control">
+            <select>
+              <option>Conservative (obvious science topics only)</option>
+              <option selected>Balanced</option>
+              <option>Aggressive (most factual queries)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="group-label">Search Engines</div>
+        <div style="font-size:12px; color:var(--text-muted)">Monitor these engines for science-relevant queries</div>
+        <div class="pill-group">
+          <div class="pill-check"><input type="checkbox" id="se-google" checked /><label for="se-google">Google</label></div>
+          <div class="pill-check"><input type="checkbox" id="se-bing" checked /><label for="se-bing">Bing</label></div>
+          <div class="pill-check"><input type="checkbox" id="se-ddg" checked /><label for="se-ddg">DuckDuckGo</label></div>
+          <div class="pill-check"><input type="checkbox" id="se-brave" checked /><label for="se-brave">Brave Search</label></div>
+          <div class="pill-check"><input type="checkbox" id="se-ecosia" /><label for="se-ecosia">Ecosia</label></div>
+          <div class="pill-check"><input type="checkbox" id="se-start" /><label for="se-start">Startpage</label></div>
+          <div class="pill-check"><input type="checkbox" id="se-yahoo" /><label for="se-yahoo">Yahoo</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════ PRIVACY ════════════ -->
+    <div class="section" id="sec-privacy">
+      <div class="section-title">Privacy</div>
+      <div class="section-desc">Truey was built around the principle that your searches are yours.</div>
+
+      <div class="manifesto">
+        <div class="manifesto-header">
+          <div class="manifesto-headline">Truey doesn't collect, store, or sell your data</div>
+        </div>
+        <div class="manifesto-body">
+          <div class="manifesto-item">
+            <div class="manifesto-check">✓</div>
+            <div>Queries go directly to your chosen AI provider — Truey never receives or logs them.</div>
+          </div>
+          <div class="manifesto-item">
+            <div class="manifesto-check">✓</div>
+            <div>No analytics or usage tracking.</div>
+          </div>
+          <div class="manifesto-item">
+            <div class="manifesto-check">✓</div>
+            <div>Anything stored locally (history, cached abstracts) stays in your browser and never touches a server.</div>
+          </div>
+          <div class="manifesto-item">
+            <div class="manifesto-check">✓</div>
+            <div>Open source — you can read exactly what it does.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="group-label">Controls</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Local-only mode</div>
+            <div class="setting-hint">Block all cloud AI providers — only Ollama and llama.cpp are permitted</div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Save query history</div>
+            <div class="setting-hint">Store recent searches locally for quick re-access (never leaves your device)</div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Cache paper abstracts</div>
+            <div class="setting-hint">Store fetched abstracts locally to avoid re-fetching the same papers</div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="group-label">Stored Data</div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">Query history</div><div class="setting-hint">42 queries stored locally</div></div>
+          <div class="setting-control"><button class="btn btn-danger" style="font-size:12px;padding:6px 12px">Clear</button></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">Abstract cache</div><div class="setting-hint">1.2 MB of cached paper data</div></div>
+          <div class="setting-control"><button class="btn btn-danger" style="font-size:12px;padding:6px 12px">Clear</button></div>
+        </div>
+      </div>
+
+      <div class="donation-card">
+        <div class="donation-text">
+          <div class="donation-title">Truey is free and always will be</div>
+          <div class="donation-sub">No ads, no subscriptions, no data sold. If Truey saves you time or helps you think more clearly, consider supporting its development — it keeps the project independent.</div>
+        </div>
+        <button class="btn-donate">
+          <span>♥</span> Support Truey
+        </button>
+      </div>
+    </div>
+
+    <div class="save-bar">
+      <button class="btn btn-secondary">Discard</button>
+      <button class="btn btn-primary">Save changes</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('sec-' + id).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  function openModal() { document.getElementById('local-modal').classList.add('open'); }
+  function closeModal() { document.getElementById('local-modal').classList.remove('open'); }
+  document.getElementById('local-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+  function switchInstallTab(id, btn) {
+    document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.install-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('install-' + id).classList.add('active');
+  }
+
+  const sciencenessTexts = {
+    1: { label: 'Plain English', text: "Creatine probably doesn't cause hair loss. There's only one small study suggesting it might raise a hormone linked to hair loss, but nothing has actually proven it makes people go bald." },
+    2: { label: 'Undergrad', text: "Creatine may slightly elevate DHT levels based on limited evidence, but a direct link to hair loss hasn't been confirmed in clinical studies." },
+    3: { label: 'Graduate', text: "One RCT reported a statistically significant increase in the DHT:testosterone ratio following creatine loading; however, no controlled trials have demonstrated androgenetic alopecia as a clinical outcome." },
+    4: { label: 'Expert', text: "Current literature lacks adequately powered RCTs demonstrating a causal relationship between creatine monohydrate supplementation and androgenetic alopecia, despite transient elevations in 5α-DHT observed in one rugby cohort (van der Merwe et al., 2009)." }
+  };
+
+  function updateScienceness(val) {
+    const { label, text } = sciencenessTexts[val];
+    document.getElementById('scienceness-preview').innerHTML = `<strong>Preview — ${label}</strong>${text}`;
+  }
+
+  function setVocabMode(mode) {
+    document.getElementById('vocab-simple').style.display   = mode === 'simple'   ? '' : 'none';
+    document.getElementById('vocab-advanced').style.display = mode === 'advanced' ? '' : 'none';
+    document.getElementById('btn-simple').classList.toggle('active',   mode === 'simple');
+    document.getElementById('btn-advanced').classList.toggle('active', mode === 'advanced');
+  }
+
+  const eqLabels = ['Plain', 'Undergrad', 'Graduate', 'Expert'];
+  function updateEQ(slider) {
+    const band = [...document.querySelectorAll('.eq-slider')].indexOf(slider);
+    document.getElementById('eq-val-' + band).textContent = eqLabels[slider.value - 1];
+  }
+
+  function resetEQ() {
+    document.querySelectorAll('.eq-slider').forEach((s, i) => {
+      s.value = 2;
+      document.getElementById('eq-val-' + i).textContent = 'Undergrad';
+    });
+  }
+
+  function selectLimitedOption(el) {
+    document.querySelectorAll('.limited-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+  }
+</script>
+</body>
+</html>

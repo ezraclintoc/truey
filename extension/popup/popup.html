@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #fff; --bg2: #f8f9fa; --bg3: #f1f3f4;
+      --border: #e0e0e0; --text: #1a1a1a; --muted: #6b7280;
+      --accent: #1a73e8; --accent-bg: #e8f0fe;
+      --success: #16a34a; --danger: #dc2626; --danger-bg: #fef2f2;
+      --radius: 8px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#1e1e1e; --bg2:#252525; --bg3:#2d2d2d;
+        --border:#383838; --text:#e8eaed; --muted:#9aa0a6;
+        --accent:#8ab4f8; --accent-bg:#1e3a5f;
+        --success:#4ade80; --danger:#f87171; --danger-bg:#3b1111;
+      }
+    }
+    body { width: 340px; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 13px; }
+
+    /* Header */
+    .header { display:flex; align-items:center; justify-content:space-between; padding:12px 13px 10px; border-bottom:1px solid var(--border); }
+    .header-left { display:flex; align-items:center; gap:7px; }
+    .dot { width:7px; height:7px; border-radius:50%; background:var(--accent); }
+    .dot.off { background:var(--muted); }
+    .name { font-size:14px; font-weight:700; color:var(--accent); }
+    .name.off { color:var(--muted); }
+    .header-right { display:flex; align-items:center; gap:8px; }
+    .btn-icon { background:none; border:none; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:6px; }
+    .btn-icon:hover { background:var(--bg3); }
+    .toggle { position:relative; width:36px; height:20px; cursor:pointer; display:inline-block; }
+    .toggle input { opacity:0; width:0; height:0; }
+    .toggle-track { position:absolute; inset:0; border-radius:99px; background:var(--border); transition:background 0.2s; }
+    .toggle input:checked + .toggle-track { background:var(--accent); }
+    .toggle-thumb { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:transform 0.2s; pointer-events:none; }
+    .toggle input:checked ~ .toggle-thumb { transform:translateX(16px); }
+
+    /* Status */
+    .status-bar { display:flex; align-items:center; justify-content:space-between; padding:6px 13px; background:var(--bg2); border-bottom:1px solid var(--border); font-size:11.5px; }
+    .status-left { display:flex; align-items:center; gap:5px; color:var(--muted); }
+    .sdot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .sdot.ok { background:var(--success); } .sdot.err { background:var(--danger); }
+    .status-label { font-weight:500; color:var(--text); }
+    .status-right { font-size:11px; color:var(--muted); }
+
+    /* Body */
+    .body { padding: 10px 0; min-height: 80px; }
+
+    /* Active card */
+    .section-label { font-size:10px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--muted); padding:0 13px; margin-bottom:7px; }
+    .active-card { margin:0 11px 10px; border:1px solid var(--accent); background:var(--accent-bg); border-radius:var(--radius); padding:10px 11px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+    .active-topic { font-size:13px; font-weight:600; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .active-meta { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); }
+    .conf-pill { font-size:10px; font-weight:600; padding:2px 7px; border-radius:99px; background:#fef3c7; color:#92400e; }
+    @media (prefers-color-scheme: dark) { .conf-pill { background:#2d1f00; color:#fbbf24; } }
+    .btn-view { font-size:12px; font-weight:500; padding:5px 10px; border-radius:6px; background:var(--accent); color:#fff; border:none; cursor:pointer; white-space:nowrap; flex-shrink:0; }
+
+    /* Recent */
+    .divider { border:none; border-top:1px solid var(--border); margin:2px 0 8px; }
+    .recent-item { display:flex; align-items:center; gap:9px; padding:7px 13px; cursor:pointer; text-decoration:none; color:inherit; }
+    .recent-item:hover { background:var(--bg2); }
+    .recent-icon { width:27px; height:27px; border-radius:6px; background:var(--bg3); flex-shrink:0; display:flex; align-items:center; justify-content:center; color:var(--muted); }
+    .recent-topic { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:1px; }
+    .recent-meta { font-size:11px; color:var(--muted); }
+    .chevron { color:var(--border); flex-shrink:0; }
+    .recent-item:hover .chevron { color:var(--muted); }
+
+    /* Empty */
+    .empty { padding:22px 13px; text-align:center; color:var(--muted); }
+    .empty-icon { width:34px; height:34px; border-radius:50%; background:var(--bg3); display:flex; align-items:center; justify-content:center; margin:0 auto 10px; }
+    .empty-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:4px; }
+    .empty-hint { font-size:12px; line-height:1.5; }
+
+    /* Disconnected */
+    .disc-banner { margin:4px 11px 8px; background:var(--danger-bg); border:1px solid var(--danger); border-radius:var(--radius); padding:10px 11px; }
+    .disc-title { font-size:12.5px; font-weight:600; color:var(--danger); margin-bottom:2px; }
+    .disc-hint { font-size:11.5px; color:var(--muted); line-height:1.4; }
+    .btn-retry { margin-top:8px; font-size:12px; font-weight:500; padding:4px 12px; border-radius:99px; border:1px solid var(--danger); background:none; color:var(--danger); cursor:pointer; }
+
+    /* Off */
+    .off-msg { padding:22px 13px; text-align:center; font-size:13px; color:var(--muted); line-height:1.5; }
+
+    /* Footer */
+    .footer { padding:9px 11px; border-top:1px solid var(--border); background:var(--bg2); }
+    .btn-settings { display:flex; align-items:center; justify-content:center; gap:7px; width:100%; padding:7px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--muted); font-size:13px; font-weight:500; cursor:pointer; }
+    .btn-settings:hover { background:var(--accent-bg); color:var(--accent); border-color:var(--accent); }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="dot" id="dot"></div>
+    <span class="name" id="name">Truey</span>
+  </div>
+  <div class="header-right">
+    <button class="btn-icon" id="btn-settings-icon" title="Settings">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </button>
+    <label class="toggle">
+      <input type="checkbox" id="global-toggle" />
+      <div class="toggle-track"></div>
+      <div class="toggle-thumb"></div>
+    </label>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div class="status-left">
+    <div class="sdot" id="sdot"></div>
+    <span id="status-text"></span>
+  </div>
+  <span id="status-right" class="status-right"></span>
+</div>
+
+<div class="body" id="body"></div>
+
+<div class="footer">
+  <button class="btn-settings" id="btn-settings">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Open settings
+  </button>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

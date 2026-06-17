@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Truey — Text Popup Mockup</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #ffffff;
+      --bg-secondary: #f8f9fa;
+      --bg-tertiary:  #f1f3f4;
+      --border:       #e0e0e0;
+      --text:         #1a1a1a;
+      --text-muted:   #6b7280;
+      --accent:       #1a73e8;
+      --accent-bg:    #e8f0fe;
+      --tag-bg:       #f1f3f4;
+      --tag-text:     #5f6368;
+      --shadow:       0 4px 24px rgba(0,0,0,0.12), 0 1px 6px rgba(0,0,0,0.06);
+      --radius:       12px;
+      --radius-sm:    7px;
+      --confidence-mid: #d97706;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:           #1e1e1e;
+        --bg-secondary: #252525;
+        --bg-tertiary:  #2d2d2d;
+        --border:       #383838;
+        --text:         #e8eaed;
+        --text-muted:   #9aa0a6;
+        --accent:       #8ab4f8;
+        --accent-bg:    #1e3a5f;
+        --tag-bg:       #2d2d2d;
+        --tag-text:     #9aa0a6;
+        --shadow:       0 4px 24px rgba(0,0,0,0.4), 0 1px 6px rgba(0,0,0,0.2);
+        --confidence-mid: #fbbf24;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Simulated article page ── */
+    .article {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .article-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .article h1 {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 14px;
+    }
+
+    .article p {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    /* The selected text highlight (simulated) */
+    .selected-text {
+      background: #b3d4ff;
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .selected-text { background: #1e3a5f; }
+    }
+
+    /* ── Popup anchor wrapper ── */
+    .popup-anchor {
+      position: relative;
+      display: inline;
+    }
+
+    /* ── Floating popup ── */
+    .truey-popup {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      z-index: 10;
+      font-size: 14px;
+    }
+
+    /* Caret */
+    .truey-popup::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 7px solid transparent;
+      border-top-color: var(--border);
+    }
+
+    .truey-popup::before {
+      content: '';
+      position: absolute;
+      top: calc(100% - 1px);
+      left: 50%;
+      transform: translateX(-50%);
+      border: 7px solid transparent;
+      border-top-color: var(--bg);
+      z-index: 1;
+    }
+
+    /* Header */
+    .popup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px 9px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .popup-header-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .popup-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    .popup-label { font-size: 12px; font-weight: 700; color: var(--accent); }
+    .popup-topic { font-size: 12px; color: var(--text-muted); }
+
+    .popup-header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px; height: 26px;
+      border-radius: 5px;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-icon:hover { background: var(--tag-bg); }
+
+    /* Selected text quote */
+    .popup-quote {
+      margin: 11px 14px 0;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .popup-quote-bar {
+      width: 3px;
+      flex-shrink: 0;
+      align-self: stretch;
+      background: var(--accent);
+      border-radius: 99px;
+      opacity: 0.5;
+    }
+
+    .popup-quote-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      font-style: italic;
+    }
+
+    /* Body */
+    .popup-body {
+      padding: 10px 14px 12px;
+    }
+
+    .popup-summary {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .popup-summary mark {
+      background: var(--accent-bg);
+      color: var(--accent);
+      border-radius: 3px;
+      padding: 0 3px;
+      font-style: normal;
+    }
+
+    /* Confidence */
+    .confidence-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .confidence-bar-wrap {
+      flex: 1;
+      height: 3px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .confidence-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--confidence-mid);
+      width: 38%;
+    }
+
+    .confidence-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+    .confidence-value { font-size: 11px; font-weight: 600; color: var(--confidence-mid); white-space: nowrap; }
+
+    /* Citations compact */
+    .popup-citations-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .popup-citation {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      padding: 6px 0;
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .popup-citation:hover .cite-title { text-decoration: underline; }
+
+    .cite-num {
+      flex-shrink: 0;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-size: 9px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .cite-content { flex: 1; min-width: 0; }
+
+    .cite-title {
+      font-size: 12px;
+      color: var(--accent);
+      line-height: 1.35;
+      margin-bottom: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cite-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .cite-journal { font-style: italic; }
+
+    .cite-source-badge {
+      font-size: 9px;
+      font-weight: 600;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* Ask for more context */
+    .popup-context-section {
+      border-top: 1px solid var(--border);
+      padding: 10px 14px;
+    }
+
+    .context-collapsed {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      transition: color 0.12s;
+    }
+
+    .context-collapsed:hover { color: var(--accent); }
+
+    .context-collapsed svg { flex-shrink: 0; }
+
+    .context-expanded {
+      display: none;
+    }
+
+    .context-expanded.open {
+      display: block;
+    }
+
+    .context-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+    }
+
+    .context-input-wrap {
+      display: flex;
+      gap: 7px;
+      align-items: flex-end;
+    }
+
+    textarea {
+      flex: 1;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 12.5px;
+      font-family: inherit;
+      padding: 8px 10px;
+      resize: none;
+      line-height: 1.5;
+      height: 60px;
+      transition: border-color 0.15s;
+    }
+
+    textarea:focus { outline: none; border-color: var(--accent); }
+
+    textarea::placeholder { color: var(--text-muted); }
+
+    .btn-send {
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px; height: 34px;
+      flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+
+    .btn-send:hover { opacity: 0.85; }
+
+    /* Footer */
+    .popup-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-secondary);
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+
+    .footer-note { font-size: 10px; color: var(--text-muted); }
+
+    .btn-more {
+      font-size: 11px;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      padding: 3px 6px;
+      border-radius: 5px;
+      transition: background 0.15s;
+    }
+    .btn-more:hover { background: var(--accent-bg); }
+
+    /* ── Demo controls ── */
+    .demo-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .demo-btn {
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .demo-btn:hover, .demo-btn.active {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* spacing below popup so caret isn't clipped */
+    .popup-spacer { height: 120px; }
+  </style>
+</head>
+<body>
+
+<div class="article">
+
+  <div class="demo-controls">
+    <button class="demo-btn active" onclick="setMode('summary')">Summary</button>
+    <button class="demo-btn" onclick="setMode('ai-asks')">Truey asks for context</button>
+    <button class="demo-btn" onclick="setMode('context')">User follow-up (open)</button>
+  </div>
+
+  <div class="article-meta">Healthline · Nutrition · June 2026</div>
+  <h1>Does Creatine Cause Hair Loss? What the Research Says</h1>
+
+  <p>
+    Creatine is one of the most popular sports supplements in the world, widely used to improve strength and exercise performance. But in recent years, concerns have circulated online that creatine supplementation may accelerate hair loss — particularly in people who are genetically predisposed to male-pattern baldness.
+  </p>
+
+  <p>
+    The concern stems primarily from a single 2009 study involving college-aged rugby players. <span class="selected-text"><span class="popup-anchor">Researchers found that after three weeks of creatine loading, participants showed a significant increase in dihydrotestosterone (DHT) — a hormone known to shrink hair follicles in individuals with androgenetic alopecia.<div class="truey-popup" id="truey-popup">
+
+      <!-- Header -->
+      <div class="popup-header">
+        <div class="popup-header-left">
+          <div class="popup-dot"></div>
+          <span class="popup-label">Truey</span>
+          <span class="popup-topic">· Creatine &amp; DHT</span>
+        </div>
+        <div class="popup-header-right">
+          <span style="font-size:10px;color:var(--text-muted);background:var(--tag-bg);padding:2px 6px;border-radius:4px;">Ollama · llama3.2</span>
+          <button class="btn-icon" title="Close" onclick="closePopup()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Selected text quote -->
+      <div class="popup-quote">
+        <div class="popup-quote-bar"></div>
+        <div class="popup-quote-text">"Researchers found that after three weeks of creatine loading, participants showed a significant increase in dihydrotestosterone (DHT)…"</div>
+      </div>
+
+      <!-- Body -->
+      <div class="popup-body">
+        <p class="popup-summary">
+          The DHT increase cited here came from <mark>one small study (n=20)</mark> and has not been replicated. No clinical trials have linked creatine supplementation to measurable hair loss outcomes — the jump from elevated DHT to follicle miniaturisation remains <mark>speculative</mark> based on current evidence.
+        </p>
+
+        <div class="confidence-row">
+          <span class="confidence-label">Evidence</span>
+          <div class="confidence-bar-wrap"><div class="confidence-bar"></div></div>
+          <span class="confidence-value">Low–Moderate</span>
+        </div>
+
+        <div class="popup-citations-label">Sources</div>
+
+        <a class="popup-citation" href="#" onclick="return false">
+          <div class="cite-num">1</div>
+          <div class="cite-content">
+            <div class="cite-title">Three weeks of creatine monohydrate supplementation affects DHT to testosterone ratio</div>
+            <div class="cite-meta"><span class="cite-source-badge">PubMed</span> van der Merwe J et al. · <span class="cite-journal">Clin J Sport Med</span> · 2009</div>
+          </div>
+        </a>
+
+        <a class="popup-citation" href="#" onclick="return false">
+          <div class="cite-num">2</div>
+          <div class="cite-content">
+            <div class="cite-title">Creatine supplementation and hair loss: a systematic review</div>
+            <div class="cite-meta"><span class="cite-source-badge">Semantic Scholar</span> Antonio J et al. · <span class="cite-journal">JISSN</span> · 2021</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Truey asks for clarification (shown in ai-asks mode) -->
+      <div class="popup-context-section" id="ai-asks-section" style="display:none">
+        <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:10px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;"></div>
+          <div style="font-size:13px;line-height:1.55;color:var(--text);">
+            Could you clarify what you'd like to verify? Are you asking whether DHT actually causes hair loss, whether creatine raises DHT at all, or whether this applies outside of the specific study mentioned?
+          </div>
+        </div>
+        <div class="context-input-wrap">
+          <textarea placeholder="e.g. I want to know if creatine actually causes hair loss in practice…" style="height:52px;"></textarea>
+          <button class="btn-send">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- User follow-up (shown in context mode) -->
+      <div class="popup-context-section" id="user-asks-section">
+        <div class="context-collapsed" id="context-collapsed" onclick="openContext()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          Ask a follow-up
+        </div>
+        <div class="context-expanded" id="context-expanded">
+          <div class="context-label">Follow-up question</div>
+          <div class="context-input-wrap">
+            <textarea placeholder="e.g. Does this apply to women too? What about lower doses?"></textarea>
+            <button class="btn-send">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="popup-footer">
+        <span class="footer-note">PubMed · Semantic Scholar · Not medical advice</span>
+        <button class="btn-more">View all 3 →</button>
+      </div>
+
+    </div></span></span>
+    However, no subsequent study has directly measured hair follicle changes or clinical hair loss in response to creatine.
+  </p>
+
+  <p>
+    Despite this, the claim has spread widely across fitness forums and social media. Many users report stopping creatine after reading about the DHT link — even though the evidence base consists of a single small trial with no follow-up replication.
+  </p>
+
+  <div class="popup-spacer"></div>
+</div>
+
+<script>
+  function closePopup() {
+    document.getElementById('truey-popup').style.display = 'none';
+  }
+
+  function openContext() {
+    document.getElementById('context-collapsed').style.display = 'none';
+    document.getElementById('context-expanded').classList.add('open');
+  }
+
+  function setMode(mode) {
+    document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('truey-popup').style.display = '';
+
+    const aiAsks    = document.getElementById('ai-asks-section');
+    const userAsks  = document.getElementById('user-asks-section');
+    const collapsed = document.getElementById('context-collapsed');
+    const expanded  = document.getElementById('context-expanded');
+    const body      = document.querySelector('.popup-body');
+    const footer    = document.querySelector('.popup-footer');
+
+    if (mode === 'ai-asks') {
+      // Truey needs clarification — hide the summary body, show AI question
+      body.style.display   = 'none';
+      footer.style.display = 'none';
+      aiAsks.style.display = '';
+      userAsks.style.display = 'none';
+    } else {
+      body.style.display   = '';
+      footer.style.display = '';
+      aiAsks.style.display = 'none';
+      userAsks.style.display = '';
+      if (mode === 'context') {
+        collapsed.style.display = 'none';
+        expanded.classList.add('open');
+      } else {
+        collapsed.style.display = '';
+        expanded.classList.remove('open');
+      }
+    }
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Science Summary — Mockup</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:               #ffffff;
+      --bg-secondary:     #f8f9fa;
+      --border:           #e0e0e0;
+      --text:             #1a1a1a;
+      --text-muted:       #6b7280;
+      --text-cite:        #374151;
+      --accent:           #1a73e8;
+      --accent-bg:        #e8f0fe;
+      --tag-bg:           #f1f3f4;
+      --tag-text:         #5f6368;
+      --shadow:           0 1px 6px rgba(0,0,0,0.08), 0 2px 16px rgba(0,0,0,0.04);
+      --radius:           12px;
+      --radius-sm:        8px;
+      --confidence-high:  #16a34a;
+      --confidence-mid:   #d97706;
+      --warning:          #d97706;
+      --warning-bg:       #fffbeb;
+      --warning-border:   #fcd34d;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:               #1e1e1e;
+        --bg-secondary:     #2a2a2a;
+        --border:           #3a3a3a;
+        --text:             #e8eaed;
+        --text-muted:       #9aa0a6;
+        --text-cite:        #bdc1c6;
+        --accent:           #8ab4f8;
+        --accent-bg:        #1e3a5f;
+        --tag-bg:           #2d2d2d;
+        --tag-text:         #9aa0a6;
+        --shadow:           0 1px 6px rgba(0,0,0,0.4), 0 2px 16px rgba(0,0,0,0.2);
+        --confidence-high:  #4ade80;
+        --confidence-mid:   #fbbf24;
+        --warning:          #fbbf24;
+        --warning-bg:       #2d1f00;
+        --warning-border:   #78350f;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    /* ── Simulated search results page ── */
+    .page {
+      max-width: 652px;
+      margin: 0 auto;
+    }
+
+    .search-bar-fake {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 12px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    .search-bar-fake svg { flex-shrink: 0; opacity: 0.5; }
+
+    /* ── Science card ── */
+    .sci-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    /* Header bar */
+    .sci-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sci-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sci-label {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: var(--accent);
+    }
+
+    .sci-topic {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .sci-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+    .sci-header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .provider-badge {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--tag-bg);
+      border-radius: 4px;
+      padding: 2px 7px;
+    }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .btn-icon:hover { background: var(--tag-bg); }
+
+    /* Body */
+    .sci-body { padding: 16px 18px; }
+
+    .sci-summary {
+      font-size: 14.5px;
+      line-height: 1.65;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    .sci-summary mark {
+      background: var(--accent-bg);
+      color: var(--accent);
+      border-radius: 3px;
+      padding: 0 3px;
+      font-style: normal;
+    }
+
+    /* Confidence indicator */
+    .confidence-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .confidence-bar-wrap {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .confidence-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--confidence-high);
+      width: 78%;
+    }
+
+    .confidence-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .confidence-value {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--confidence-high);
+    }
+
+    /* Tags */
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .tag {
+      font-size: 11px;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      border-radius: 99px;
+      padding: 3px 10px;
+    }
+
+    /* Citations */
+    .citations-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .citation {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 9px 0;
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .citation:hover .cite-title { text-decoration: underline; }
+
+    .cite-num {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .cite-content { flex: 1; min-width: 0; }
+
+    .cite-title {
+      font-size: 13px;
+      color: var(--accent);
+      line-height: 1.4;
+      margin-bottom: 2px;
+    }
+
+    .cite-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .cite-journal { font-style: italic; }
+
+    .cite-source-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* Footer */
+    .sci-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .footer-note {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .btn-more {
+      font-size: 12px;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .btn-more:hover { background: var(--accent-bg); }
+
+    /* ── Loading state (hidden by default) ── */
+    .sci-card.loading .sci-body { padding: 20px 18px; }
+
+    .skeleton {
+      background: linear-gradient(90deg, var(--border) 25%, var(--bg-secondary) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .skeleton.line-full  { height: 13px; width: 100%; }
+    .skeleton.line-80    { height: 13px; width: 80%; }
+    .skeleton.line-60    { height: 13px; width: 60%; }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── Fake search results below ── */
+    .result-stub {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-stub .stub-url  { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+    .result-stub .stub-title { font-size: 18px; color: var(--accent); margin-bottom: 4px; cursor: pointer; }
+    .result-stub .stub-title:hover { text-decoration: underline; }
+    .result-stub .stub-snippet { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+
+    /* Toggle demo */
+    .demo-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .demo-btn {
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .demo-btn:hover, .demo-btn.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+
+    /* ── Limited data & empty states ── */
+    .limited-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--warning-bg);
+      border-bottom: 1px solid var(--warning-border);
+      padding: 14px 18px;
+    }
+
+    .limited-icon {
+      font-size: 15px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .limited-text { flex: 1; }
+
+    .limited-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--warning, #d97706);
+      margin-bottom: 2px;
+    }
+
+    .limited-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .limited-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn-relax {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: 99px;
+      border: none;
+      background: var(--warning, #d97706);
+      color: white;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-relax:hover { opacity: 0.85; }
+
+    .btn-keep {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-keep:hover { background: var(--bg-secondary, #f8f9fa); }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Fake search bar -->
+  <div class="search-bar-fake">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+    </svg>
+    does creatine supplementation cause hair loss
+  </div>
+
+  <!-- Demo toggles (for mockup only) -->
+  <div class="demo-controls">
+    <button class="demo-btn active" onclick="showState('loaded')">Loaded</button>
+    <button class="demo-btn" onclick="showState('loading')">Loading</button>
+    <button class="demo-btn" onclick="showState('collapsed')">Collapsed</button>
+    <button class="demo-btn" onclick="showState('limited')">Limited data prompt</button>
+    <button class="demo-btn" onclick="showState('loaded-limited')">Limited result</button>
+    <button class="demo-btn" onclick="showState('no-sources')">No sources</button>
+  </div>
+
+  <!-- ── SCIENCE CARD: LOADED STATE ── -->
+  <div class="sci-card" id="card-loaded">
+
+    <div class="sci-header">
+      <div class="sci-header-left">
+        <div class="sci-dot"></div>
+        <span class="sci-label">Truey</span>
+        <span class="sci-topic">· Creatine &amp; Hair Loss</span>
+      </div>
+      <div class="sci-header-right">
+        <span class="provider-badge">Ollama · llama3.2</span>
+        <button class="btn-icon" title="Refresh">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+          </svg>
+        </button>
+        <button class="btn-icon" title="Collapse" onclick="showState('collapsed')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="18 15 12 9 6 15"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="sci-body">
+      <p class="sci-summary">
+        Current evidence does <mark>not strongly support</mark> a direct causal link between creatine supplementation and hair loss in most individuals. One small 2009 study found elevated DHT levels after creatine loading in rugby players, but no studies have directly measured hair follicle changes or clinical hair loss. The DHT hypothesis remains <mark>unconfirmed</mark> in larger or longer-term trials.
+      </p>
+
+      <div class="confidence-row">
+        <span class="confidence-label">Evidence confidence</span>
+        <div class="confidence-bar-wrap">
+          <div class="confidence-bar" style="width:38%; background: var(--confidence-mid);"></div>
+        </div>
+        <span class="confidence-value" style="color: var(--confidence-mid);">Low–Moderate</span>
+      </div>
+
+      <div class="tag-row">
+        <span class="tag">Nutrition</span>
+        <span class="tag">Sports Science</span>
+        <span class="tag">Endocrinology</span>
+        <span class="tag">4 studies</span>
+      </div>
+
+      <div class="citations-label">Sources</div>
+
+      <a class="citation" href="#" onclick="return false">
+        <div class="cite-num">1</div>
+        <div class="cite-content">
+          <div class="cite-title">Three weeks of creatine monohydrate supplementation affects dihydrotestosterone to testosterone ratio in college-aged rugby players</div>
+          <div class="cite-meta">
+            <span class="cite-source-badge">PubMed</span>
+            van der Merwe J et al. · <span class="cite-journal">Clinical Journal of Sport Medicine</span> · 2009
+          </div>
+        </div>
+      </a>
+
+      <a class="citation" href="#" onclick="return false">
+        <div class="cite-num">2</div>
+        <div class="cite-content">
+          <div class="cite-title">Creatine supplementation and hair loss: A systematic review of the current evidence</div>
+          <div class="cite-meta">
+            <span class="cite-source-badge">Semantic Scholar</span>
+            Antonio J et al. · <span class="cite-journal">Journal of the International Society of Sports Nutrition</span> · 2021
+          </div>
+        </div>
+      </a>
+
+      <a class="citation" href="#" onclick="return false">
+        <div class="cite-num">3</div>
+        <div class="cite-content">
+          <div class="cite-title">Safety of creatine supplementation in active adolescents and youth athletes</div>
+          <div class="cite-meta">
+            <span class="cite-source-badge">Europe PMC</span>
+            Jagim AR et al. · <span class="cite-journal">Nutrients</span> · 2022
+          </div>
+        </div>
+      </a>
+
+      <a class="citation" href="#" onclick="return false">
+        <div class="cite-num">4</div>
+        <div class="cite-content">
+          <div class="cite-title">Androgen metabolism and hair follicle biology: implications for androgenetic alopecia</div>
+          <div class="cite-meta">
+            <span class="cite-source-badge">Cochrane</span>
+            Randall VA · <span class="cite-journal">Clinical Dermatology</span> · 2021
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="sci-footer">
+      <span class="footer-note">PubMed · Semantic Scholar · Europe PMC · Cochrane · Not medical advice</span>
+      <button class="btn-more">View all 4 studies →</button>
+    </div>
+
+  </div>
+
+  <!-- ── SCIENCE CARD: LOADING STATE (hidden) ── -->
+  <div class="sci-card loading" id="card-loading" style="display:none">
+    <div class="sci-header">
+      <div class="sci-header-left">
+        <div class="sci-dot"></div>
+        <span class="sci-label">Truey</span>
+      </div>
+      <div class="sci-header-right">
+        <span class="provider-badge">Searching PubMed…</span>
+      </div>
+    </div>
+    <div class="sci-body">
+      <div class="skeleton line-full"></div>
+      <div class="skeleton line-80"></div>
+      <div class="skeleton line-full"></div>
+      <div class="skeleton line-60"></div>
+    </div>
+  </div>
+
+  <!-- ── SCIENCE CARD: COLLAPSED STATE (hidden) ── -->
+  <div class="sci-card" id="card-collapsed" style="display:none">
+    <div class="sci-header">
+      <div class="sci-header-left">
+        <div class="sci-dot"></div>
+        <span class="sci-label">Truey</span>
+        <span class="sci-topic">· Creatine &amp; Hair Loss · 4 studies</span>
+      </div>
+      <div class="sci-header-right">
+        <span class="provider-badge">Ollama · llama3.2</span>
+        <button class="btn-icon" title="Expand" onclick="showState('loaded')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCIENCE CARD: LIMITED DATA STATE (hidden) ── -->
+  <div class="sci-card" id="card-limited" style="display:none">
+
+    <div class="sci-header">
+      <div class="sci-header-left">
+        <div class="sci-dot"></div>
+        <span class="sci-label">Truey</span>
+        <span class="sci-topic">· Creatine &amp; Hair Loss</span>
+      </div>
+      <div class="sci-header-right">
+        <span class="provider-badge">Ollama · llama3.2</span>
+      </div>
+    </div>
+
+    <div class="limited-banner">
+      <div class="limited-text">
+        <div class="limited-title">Only 1 study matched your filters</div>
+        <div class="limited-desc">Your active filters (min. 5 citations · last 10 years · RCTs only) are restricting results. Expand the search to find more studies, or summarize using the 1 study found.</div>
+        <div class="limited-actions">
+          <button class="btn-relax" onclick="showState('loaded')">Expand search</button>
+          <button class="btn-keep" onclick="showState('loaded-limited')">Summarize with 1 study</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SCIENCE CARD: LIMITED DATA RESULT (after user chose "Summarize with 1 study") ── -->
+  <div class="sci-card" id="card-loaded-limited" style="display:none">
+
+    <div class="sci-header">
+      <div class="sci-header-left">
+        <div class="sci-dot"></div>
+        <span class="sci-label">Truey</span>
+        <span class="sci-topic">· Creatine &amp; Hair Loss</span>
+      </div>
+      <div class="sci-header-right">
+        <span class="provider-badge">Ollama · llama3.2</span>
+        <button class="btn-icon" title="Collapse" onclick="showState('collapsed')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="18 15 12 9 6 15"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="limited-banner" style="border-bottom:none; padding-bottom:0;">
+      <div class="limited-text">
+        <div class="limited-title">Based on 1 study — limited confidence</div>
+        <div class="limited-desc" style="margin-bottom:6px;">Results may not reflect the broader evidence. <button onclick="showState('loaded')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-weight:500;">Expand search →</button></div>
+      </div>
+    </div>
+
+    <div class="sci-body">
+      <p class="sci-summary">
+        Creatine supplementation was associated with <mark>elevated DHT levels</mark> in young male athletes after a loading phase, based on a single small trial. No studies have directly measured hair loss as an outcome. The evidence base is too narrow to draw firm conclusions.
+      </p>
+
+      <div class="confidence-row">
+        <span class="confidence-label">Evidence confidence</span>
+        <div class="confidence-bar-wrap">
+          <div class="confidence-bar" style="width:12%; background: var(--warning);"></div>
+        </div>
+        <span class="confidence-value" style="color:var(--warning);">Very Low</span>
+      </div>
+
+      <div class="tag-row">
+        <span class="tag">Sports Science</span>
+        <span class="tag">1 study</span>
+      </div>
+
+      <div class="citations-label">Sources</div>
+      <a class="citation" href="#" onclick="return false">
+        <div class="cite-num">1</div>
+        <div class="cite-content">
+          <div class="cite-title">Three weeks of creatine monohydrate supplementation affects dihydrotestosterone to testosterone ratio in college-aged rugby players</div>
+          <div class="cite-meta">
+            <span class="cite-source-badge">PubMed</span>
+            van der Merwe J et al. · <span class="cite-journal">Clinical Journal of Sport Medicine</span> · 2009
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="sci-footer">
+      <span class="footer-note">1 study · filters active · Not medical advice</span>
+      <button class="btn-more" onclick="showState('loaded')">Expand search →</button>
+    </div>
+
+  </div>
+
+  <!-- ── SCIENCE CARD: NO SOURCES STATE (hidden) ── -->
+  <div class="sci-card" id="card-no-sources" style="display:none">
+
+    <div class="sci-header">
+      <div class="sci-header-left">
+        <div class="sci-dot"></div>
+        <span class="sci-label">Truey</span>
+        <span class="sci-topic">· Creatine &amp; Hair Loss</span>
+      </div>
+      <div class="sci-header-right">
+        <span class="provider-badge">Ollama · llama3.2</span>
+        <button class="btn-icon" title="Refresh">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="sci-body" style="padding: 28px 18px; text-align: center;">
+      <div style="font-size: 28px; margin-bottom: 12px; opacity: 0.3;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto;display:block;opacity:0.4">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+          <line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>
+        </svg>
+      </div>
+      <div style="font-size:14px; font-weight:600; color:var(--text); margin-bottom:6px;">No studies found</div>
+      <div style="font-size:13px; color:var(--text-muted); line-height:1.6; max-width:340px; margin:0 auto 18px;">
+        No papers matched this query across PubMed, Semantic Scholar, Cochrane, and arXiv. This topic may be too niche, too new, or phrased in a way that doesn't match academic literature.
+      </div>
+      <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+        <button class="btn-more" style="border:1px solid var(--border); padding:6px 16px; border-radius:99px; font-size:12px;">Try different wording</button>
+        <button class="btn-more" style="border:1px solid var(--border); padding:6px 16px; border-radius:99px; font-size:12px;" onclick="">Remove all filters</button>
+      </div>
+    </div>
+
+    <div class="sci-footer">
+      <span class="footer-note">Searched PubMed · Semantic Scholar · Cochrane · arXiv</span>
+    </div>
+
+  </div>
+
+  <!-- Fake search results -->
+  <div class="result-stub">
+    <div class="stub-url">www.healthline.com › nutrition › creatine-hair-loss</div>
+    <div class="stub-title">Does Creatine Cause Hair Loss? What the Research Says</div>
+    <div class="stub-snippet">Some people worry that taking creatine supplements can cause hair loss or baldness. Here's what the science actually says about this claim.</div>
+  </div>
+
+  <div class="result-stub">
+    <div class="stub-url">examine.com › supplements › creatine</div>
+    <div class="stub-title">Creatine — Health Benefits, Dosage, Side Effects | Examine</div>
+    <div class="stub-snippet">Creatine is a molecule produced in the body, stored primarily in muscles where it is used for energy. It is the most well-studied supplement for athletic performance.</div>
+  </div>
+
+</div>
+
+<script>
+  function showState(state) {
+    ['loaded','loading','collapsed','limited','loaded-limited','no-sources'].forEach(s => {
+      document.getElementById('card-' + s).style.display = state === s ? '' : 'none';
+    });
+    document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`.demo-btn[onclick="showState('${state}')"]`);
+    if (btn) btn.classList.add('active');
+  }
+</script>
+
+</body>
+</html>
