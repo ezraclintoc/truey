@@ -2,6 +2,20 @@
 
 A browser extension that summarizes peer-reviewed research inline on your search results. Ask a question on Google, Bing, DuckDuckGo, Brave, Ecosia, Startpage, or Yahoo (or just select text on any page), and Truey fetches relevant papers from PubMed, Semantic Scholar, Europe PMC, arXiv, and/or OpenAlex, then summarizes the evidence with an AI model of your choice — highlighting the single clearest finding and showing a confidence level.
 
+![Truey answering "does vitamin C prevent colds" on DuckDuckGo](assets/demo.gif)
+
+## Example
+
+Query: **"does vitamin C prevent colds"**
+
+> Vitamin C has been studied for its potential to prevent and treat the common cold, with mixed results. While regular vitamin C supplementation has been shown to reduce the duration of colds by 8% in adults and 14% in children, it does not appear to lower the incidence of colds among the healthy general public. In fact, **regular vitamin C supplementation fails to lower the incidence of colds among the healthy general public.** However, vitamin C may be useful for people exposed to brief periods of severe physical exercise, and it may also reduce the severity of colds.
+>
+> Confidence: High
+
+**Sources cited:** UCI Sports Nutrition Project (2020) · Market analysis of vitamin C-containing dietary supplements (2025) · *Vitamin C for preventing and treating the common cold*, Cochrane Database of Systematic Reviews (2013)
+
+Pulled from a real run of `test-quality.js` against the bundled query set — see [Development](#development) for how to reproduce these.
+
 ## Features
 
 - **Inline search cards** — a "Truey" result card appears alongside your normal search results when your query looks scientific.
@@ -76,6 +90,14 @@ Both scripts expect a Chromium binary on your `PATH`, or set `CHROMIUM_PATH` to 
 
 ```bash
 CONFIG_NAME=no-date-filter SETTINGS_OVERRIDE='{"dateRangeYears":0}' GROQ_API_KEY=your-key node test-quality.js
+```
+
+`record-demo.js` re-records the GIF above (runs one query in a visible browser and saves a video via Playwright):
+
+```bash
+GROQ_API_KEY=your-key node record-demo.js
+# then convert the resulting .webm (path printed at the end) to a GIF, e.g.:
+ffmpeg -i video.webm -vf "fps=8,scale=900:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 assets/demo.gif
 ```
 
 ## Project structure

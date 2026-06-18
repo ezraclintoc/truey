@@ -1,6 +1,6 @@
 import ext from './compat.js';
 
-const SETTINGS_VERSION = 2;
+const SETTINGS_VERSION = 3;
 
 export const DEFAULTS = {
   enabled:        true,
@@ -26,7 +26,7 @@ export const DEFAULTS = {
     arxiv:           false,   // mostly physics/CS/math — rarely useful for health queries
     cochrane:        false,  // not yet implemented
     europePmc:       true,
-    openAlex:        false,
+    openAlex:        true,   // catches landmark/old papers other sources miss (e.g. Cochrane reviews)
     biorxiv:         false,
   },
 
@@ -65,7 +65,8 @@ export async function getSettings() {
   // Run migrations when stored version is behind current.
   if ((stored.settingsVersion ?? 0) < SETTINGS_VERSION) {
     // v2: disable arXiv (physics/CS junk), enable Europe PMC, disable cochrane (not implemented yet).
-    settings.sources = { ...settings.sources, arxiv: false, europePmc: true, cochrane: false };
+    // v3: enable OpenAlex — surfaces landmark/old papers (e.g. Cochrane reviews) other sources miss.
+    settings.sources = { ...settings.sources, arxiv: false, europePmc: true, cochrane: false, openAlex: true };
     settings.settingsVersion = SETTINGS_VERSION;
     await ext.storage.local.set({ sources: settings.sources, settingsVersion: SETTINGS_VERSION });
   }
