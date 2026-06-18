@@ -17,10 +17,12 @@ You can clear all stored data at any time from the extension's settings page, or
 
 ## What Truey sends, and to whom
 
-When you ask a question (via search or the popup), Truey sends network requests to two categories of third party, both of which you control:
+When you ask a question — via search, the popup, or by selecting text on a page and choosing "Verify with Truey" — Truey sends network requests to two categories of third party, both of which you control:
 
-1. **Scientific paper databases** — to find relevant studies, your query is sent to whichever sources you've enabled in Settings → Sources: PubMed (NCBI), Semantic Scholar, Europe PMC, arXiv, and/or OpenAlex. These are public, free research APIs; Truey sends only the search query, nothing else.
-2. **Your chosen AI provider** — to generate the summary, the fetched paper abstracts and your question are sent to the AI provider and endpoint you configured (e.g. Groq, OpenAI, Anthropic, Grok, or a local Ollama/llama.cpp server, or any custom OpenAI-compatible endpoint you specify). If you use a cloud provider, your API key is sent to that provider exactly as it would be from any other application using that key — Truey does not relay it anywhere else. If you use a local provider (Ollama, llama.cpp) on `localhost`, nothing leaves your machine at this step.
+1. **Scientific paper databases** — to find relevant studies, your query (or the text you selected) is sent to whichever sources you've enabled in Settings → Sources: PubMed (NCBI), Semantic Scholar, Europe PMC, arXiv, and/or OpenAlex. These are public, free research APIs; Truey sends only the query/selected text, nothing else.
+2. **Your chosen AI provider** — to generate the summary, the fetched paper abstracts and your question (or selected text) are sent to the AI provider and endpoint you configured (e.g. Groq, OpenAI, Anthropic, Grok, or a local Ollama/llama.cpp server, or any custom OpenAI-compatible endpoint you specify). If you use a cloud provider, your API key is sent to that provider exactly as it would be from any other application using that key — Truey does not relay it anywhere else. If you use a local provider (Ollama, llama.cpp) on `localhost`, nothing leaves your machine at this step.
+
+Text you select for verification is read only at the moment you invoke "Verify with Truey" — Truey does not monitor, log, or transmit anything else on the page.
 
 Truey itself has no backend server — there is no Truey-operated service in this data path at all. Each request goes directly from your browser to the provider/database you selected.
 
