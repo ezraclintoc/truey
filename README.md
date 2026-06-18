@@ -1,21 +1,21 @@
 # Truey
 
-A browser extension that summarizes peer-reviewed research inline on your search results. Ask a question on Google, Bing, DuckDuckGo, Brave, Ecosia, Startpage, or Yahoo, and Truey fetches relevant papers from PubMed, Semantic Scholar, Europe PMC, arXiv, and/or OpenAlex, then summarizes the evidence with an AI model of your choice — highlighting the single clearest finding and showing a confidence level.
+A browser extension that summarizes peer-reviewed research inline on your search results. Ask a question on Google, Bing, DuckDuckGo, Brave, Ecosia, Startpage, or Yahoo, and Truey fetches relevant papers from PubMed, Semantic Scholar, Europe PMC, arXiv, and/or OpenAlex, then summarizes the evidence with an AI model of your choice. It highlights the single clearest finding and shows a confidence level.
 
 ![Truey answering "does vitamin C prevent colds" on DuckDuckGo](assets/demo.gif)
 
 ## Features
 
-- **Inline search cards** — a "Truey" result card appears alongside your normal search results when your query looks scientific.
-- **Multi-source paper retrieval** — PubMed, Semantic Scholar, Europe PMC, arXiv, and OpenAlex, with keyword-relevance ranking so off-topic papers get filtered out before reaching the AI.
-- **Bring your own AI provider** — Groq, Ollama, llama.cpp, Grok, OpenAI, Anthropic (Claude), or any OpenAI-compatible custom endpoint.
-- **Configurable vocabulary level** — plain English up to expert/researcher level, globally or per scientific domain.
-- **Evidence confidence bar** — every summary ends with a Low/Moderate/High confidence rating based on the underlying studies.
-- **Privacy controls** — local-only mode, optional history/abstract caching, all configurable from the settings page.
+- **Inline search cards**: a "Truey" result card appears alongside your normal search results when your query looks scientific.
+- **Multi-source paper retrieval**: PubMed, Semantic Scholar, Europe PMC, arXiv, and OpenAlex, with keyword-relevance ranking so off-topic papers get filtered out before reaching the AI.
+- **Bring your own AI provider**: Groq, Ollama, llama.cpp, Grok, OpenAI, Anthropic (Claude), or any OpenAI-compatible custom endpoint.
+- **Configurable vocabulary level**: plain English up to expert/researcher level, globally or per scientific domain.
+- **Evidence confidence bar**: every summary ends with a Low/Moderate/High confidence rating based on the underlying studies.
+- **Privacy controls**: local-only mode, optional history/abstract caching, all configurable from the settings page.
 
 ## Installation
 
-Truey is not yet published to an extension store — install it as an unpacked extension:
+Truey is not yet published to an extension store, so install it as an unpacked extension:
 
 ### Chrome / Edge / Brave (Chromium-based)
 
@@ -30,23 +30,25 @@ Truey is not yet published to an extension store — install it as an unpacked e
 1. Clone or download this repository.
 2. Open `about:debugging#/runtime/this-firefox`.
 3. Click **Load Temporary Add-on…** and select `extension/manifest.json`.
-   (Temporary add-ons are removed when Firefox restarts — for a persistent install you'll need to sign the extension via [AMO](https://addons.mozilla.org/).)
+   (Temporary add-ons are removed when Firefox restarts. For a persistent install you'll need to sign the extension via [AMO](https://addons.mozilla.org/).)
 
-## Setup — configure an AI provider
+## Setup: configure an AI provider
 
-After installing, click the Truey icon → **Settings** (or the gear icon) and configure a provider under the **Provider** tab:
+After installing, click the Truey icon, then **Settings** (or the gear icon), and configure a provider under the **Provider** tab:
 
-| Provider | Endpoint | API key needed? |
-|---|---|---|
-| Ollama | `http://localhost:11434` | No |
-| llama.cpp | `http://localhost:8080` | No |
-| Groq | `https://api.groq.com/openai` | Yes — [get one here](https://console.groq.com/keys) |
-| OpenAI | `https://api.openai.com` | Yes |
-| Anthropic (Claude) | `https://api.anthropic.com` | Yes |
-| Grok | `https://api.x.ai` | Yes |
-| Custom (any other OpenAI-compatible API) | your endpoint URL | Depends on provider |
+| Provider | Endpoint | API key needed? | Free? |
+|---|---|---|---|
+| Ollama | `http://localhost:11434` | No | Yes, runs locally |
+| llama.cpp | `http://localhost:8080` | No | Yes, runs locally |
+| Groq | `https://api.groq.com/openai` | Yes, [get one here](https://console.groq.com/keys) | Free tier available |
+| OpenAI | `https://api.openai.com` | Yes | No, paid |
+| Anthropic (Claude) | `https://api.anthropic.com` | Yes | No, paid |
+| Grok | `https://api.x.ai` | Yes | No, paid |
+| Custom (any other OpenAI-compatible API) | your endpoint URL | Depends on provider | Depends on provider |
 
 Pick a model name your provider supports, save, and use **Test connection** to confirm it's reachable.
+
+![Settings page, Provider tab](assets/settings-provider.png)
 
 ## Configuring sources & filters
 
@@ -55,11 +57,14 @@ From the **Sources** and **Filters** tabs you can:
 - Set a minimum citation count, a publication date range, and preferred study types (meta-analyses, systematic reviews, RCTs).
 - Choose what happens when too few papers pass the filters: ask before proceeding, expand the search automatically, or summarize with whatever was found.
 
+![Settings page, Databases tab](assets/settings-sources.png)
+![Settings page, Paper Filters tab](assets/settings-filters.png)
+
 ## Project structure
 
 ```
 extension/
-  background/   service worker — message routing, pipeline orchestration
+  background/   service worker (message routing, pipeline orchestration)
   content/      injected into search result pages
   lib/          shared logic: paper fetchers, AI provider adapters, storage, classifier
   popup/        toolbar popup UI
@@ -72,4 +77,4 @@ Truey has no backend of its own. See [PRIVACY.md](PRIVACY.md) for exactly what's
 
 ## License
 
-[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) — free to use, modify, and share for non-commercial purposes, with attribution. Contact for commercial licensing.
+[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). Free to use, modify, and share for non-commercial purposes, with attribution. Contact for commercial licensing.

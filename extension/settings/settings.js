@@ -5,7 +5,7 @@ const DEFAULTS = {
   apiKey: '', model: 'llama3.2', vocabMode: 'simple', scienceness: 2,
   eqBands: { medicine:2, statistics:2, nutrition:2, psychology:2, biology:2, physics:2, climate:2 },
   fieldPresets: [], summaryLength: 'standard', showHighlights: true, showConfidence: true, maxCitations: 3,
-  sources: { pubmed:true, semanticScholar:true, arxiv:false, cochrane:false, europePmc:true, openAlex:false, biorxiv:false },
+  sources: { pubmed:true, semanticScholar:true, arxiv:false, cochrane:false, europePmc:true, openAlex:true, biorxiv:false },
   minCitations: 0, dateRangeYears: 10, maxPapers: 12,
   limitedDataAction: 'ask', limitedThreshold: 3, studyTypes: ['meta','systematic','rct'],
   autoDetectSearch: true, contextMenu: true, sensitivity: 'balanced',
