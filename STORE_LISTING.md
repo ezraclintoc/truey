@@ -50,12 +50,36 @@ policy: [link to PRIVACY.md / hosted privacy page]
 
 This is an independent, open-source project, not affiliated with any of
 the listed AI providers or research databases.
+
+Source code: https://github.com/ezraclintoc/truey
+```
+
+## Note to reviewers (AMO)
+
+```
+Source code: https://github.com/ezraclintoc/truey
+
+The extension/ folder in that repo is exactly what's submitted here, no
+build step, bundler, or minifier, just plain JS. README.md has setup and
+install instructions; PRIVACY.md has the full data-handling disclosure
+referenced in this submission.
+
+Two Playwright-based test scripts are included if you'd like to exercise
+it live: test-extension.js (functional smoke test) and test-quality.js
+(runs a set of sample queries end-to-end). Both require a GROQ_API_KEY
+(free tier at console.groq.com) to drive the AI summarization step,
+happy to provide a temporary test key on request if that's useful for
+review.
 ```
 
 ## Category
 
 - Chrome Web Store: **Productivity** (or "Tools" if Productivity isn't a fit)
-- Firefox AMO: **Privacy & Security** or **Productivity**
+- Firefox AMO (actual options, pick up to 3): **Search Tools** (primary, augments search engine results) and **Privacy & Security** (BYO API key, local-only mode, no telemetry). No third category is a real fit.
+
+## License (AMO)
+
+AMO's license dropdown (MPL/Apache/GPL family/LGPL family/AGPL/MIT/ISC/BSD-2/Unlicense/All Rights Reserved) has no non-commercial option, since all of those either permit commercial use or grant no reuse rights at all. Select **Other** and paste/link the project's actual license: CC BY-NC 4.0, `https://creativecommons.org/licenses/by-nc/4.0/` (full text in the repo's `LICENSE` file).
 
 ## Permission justifications (Chrome Web Store dashboard asks for these per-permission)
 
