@@ -1,27 +1,14 @@
 # Truey
 
-A browser extension that summarizes peer-reviewed research inline on your search results. Ask a question on Google, Bing, DuckDuckGo, Brave, Ecosia, Startpage, or Yahoo (or just select text on any page), and Truey fetches relevant papers from PubMed, Semantic Scholar, Europe PMC, arXiv, and/or OpenAlex, then summarizes the evidence with an AI model of your choice — highlighting the single clearest finding and showing a confidence level.
+A browser extension that summarizes peer-reviewed research inline on your search results. Ask a question on Google, Bing, DuckDuckGo, Brave, Ecosia, Startpage, or Yahoo, and Truey fetches relevant papers from PubMed, Semantic Scholar, Europe PMC, arXiv, and/or OpenAlex, then summarizes the evidence with an AI model of your choice — highlighting the single clearest finding and showing a confidence level.
 
 ![Truey answering "does vitamin C prevent colds" on DuckDuckGo](assets/demo.gif)
-
-## Example
-
-Query: **"does vitamin C prevent colds"**
-
-> Vitamin C has been studied for its potential to prevent and treat the common cold, with mixed results. While regular vitamin C supplementation has been shown to reduce the duration of colds by 8% in adults and 14% in children, it does not appear to lower the incidence of colds among the healthy general public. In fact, **regular vitamin C supplementation fails to lower the incidence of colds among the healthy general public.** However, vitamin C may be useful for people exposed to brief periods of severe physical exercise, and it may also reduce the severity of colds.
->
-> Confidence: High
-
-**Sources cited:** UCI Sports Nutrition Project (2020) · Market analysis of vitamin C-containing dietary supplements (2025) · *Vitamin C for preventing and treating the common cold*, Cochrane Database of Systematic Reviews (2013)
-
-Pulled from a real run of `test-quality.js` against the bundled query set — see [Development](#development) for how to reproduce these.
 
 ## Features
 
 - **Inline search cards** — a "Truey" result card appears alongside your normal search results when your query looks scientific.
-- **Text selection verification** — select any claim on a webpage and right-click "Verify with Truey" (or use the selection popup) to check it against the literature.
 - **Multi-source paper retrieval** — PubMed, Semantic Scholar, Europe PMC, arXiv, and OpenAlex, with keyword-relevance ranking so off-topic papers get filtered out before reaching the AI.
-- **Bring your own AI provider** — Ollama, llama.cpp, Grok, OpenAI, Anthropic (Claude), or any OpenAI-compatible custom endpoint.
+- **Bring your own AI provider** — Groq, Ollama, llama.cpp, Grok, OpenAI, Anthropic (Claude), or any OpenAI-compatible custom endpoint.
 - **Configurable vocabulary level** — plain English up to expert/researcher level, globally or per scientific domain.
 - **Evidence confidence bar** — every summary ends with a Low/Moderate/High confidence rating based on the underlying studies.
 - **Privacy controls** — local-only mode, optional history/abstract caching, all configurable from the settings page.
@@ -53,10 +40,11 @@ After installing, click the Truey icon → **Settings** (or the gear icon) and c
 |---|---|---|
 | Ollama | `http://localhost:11434` | No |
 | llama.cpp | `http://localhost:8080` | No |
+| Groq | `https://api.groq.com/openai` | Yes — [get one here](https://console.groq.com/keys) |
 | OpenAI | `https://api.openai.com` | Yes |
 | Anthropic (Claude) | `https://api.anthropic.com` | Yes |
 | Grok | `https://api.x.ai` | Yes |
-| Custom (any OpenAI-compatible API, e.g. Groq) | your endpoint URL | Depends on provider |
+| Custom (any other OpenAI-compatible API) | your endpoint URL | Depends on provider |
 
 Pick a model name your provider supports, save, and use **Test connection** to confirm it's reachable.
 
@@ -67,45 +55,12 @@ From the **Sources** and **Filters** tabs you can:
 - Set a minimum citation count, a publication date range, and preferred study types (meta-analyses, systematic reviews, RCTs).
 - Choose what happens when too few papers pass the filters: ask before proceeding, expand the search automatically, or summarize with whatever was found.
 
-## Development
-
-```bash
-npm install
-```
-
-Two Playwright-based test scripts load the unpacked extension into a real Chromium instance:
-
-```bash
-# Functional smoke test — card injection, settings page, citations, etc.
-GROQ_API_KEY=your-key node test-extension.js
-
-# Quality evaluation — runs a set of diverse queries and prints full
-# summaries + highlighted phrases for manual review.
-GROQ_API_KEY=your-key node test-quality.js
-```
-
-Both scripts expect a Chromium binary on your `PATH`, or set `CHROMIUM_PATH` to point at one. On headless Linux you'll also need a display (e.g. `DISPLAY=:0` with Xvfb running).
-
-`test-quality.js` accepts two optional env vars for testing alternate configurations without touching the UI:
-
-```bash
-CONFIG_NAME=no-date-filter SETTINGS_OVERRIDE='{"dateRangeYears":0}' GROQ_API_KEY=your-key node test-quality.js
-```
-
-`record-demo.js` re-records the GIF above (runs one query in a visible browser and saves a video via Playwright):
-
-```bash
-GROQ_API_KEY=your-key node record-demo.js
-# then convert the resulting .webm (path printed at the end) to a GIF, e.g.:
-ffmpeg -i video.webm -vf "fps=8,scale=900:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 assets/demo.gif
-```
-
 ## Project structure
 
 ```
 extension/
   background/   service worker — message routing, pipeline orchestration
-  content/      injected into search result pages and arbitrary pages (selection popup)
+  content/      injected into search result pages
   lib/          shared logic: paper fetchers, AI provider adapters, storage, classifier
   popup/        toolbar popup UI
   settings/     full settings page
@@ -113,4 +68,4 @@ extension/
 
 ## License
 
-ISC
+[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) — free to use, modify, and share for non-commercial purposes, with attribution. Contact for commercial licensing.

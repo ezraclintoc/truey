@@ -80,7 +80,8 @@
     "*://rest.ensembl.org/*",
     "*://api.x.ai/*",
     "*://api.openai.com/*",
-    "*://api.anthropic.com/*"
+    "*://api.anthropic.com/*",
+    "*://api.groq.com/*"
   ],
 
   "web_accessible_resources": [

@@ -173,6 +173,7 @@ export function defaultEndpoint(provider) {
     ollama:  'http://localhost:11434',
     llamacpp:'http://localhost:8080',
     grok:    'https://api.x.ai',
+    groq:    'https://api.groq.com/openai',
     openai:  'https://api.openai.com',
     claude:  'https://api.anthropic.com',
     custom:  '',
