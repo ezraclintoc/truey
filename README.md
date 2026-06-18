@@ -66,6 +66,10 @@ extension/
   settings/     full settings page
 ```
 
+## Privacy
+
+Truey has no backend of its own. See [PRIVACY.md](PRIVACY.md) for exactly what's stored locally and what's sent to which third party.
+
 ## License
 
 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) — free to use, modify, and share for non-commercial purposes, with attribution. Contact for commercial licensing.
